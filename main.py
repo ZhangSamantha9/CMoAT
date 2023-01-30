@@ -12,7 +12,7 @@ def input_cancer(cancer_name):
     cancer = cancer_name
     return cancer
 locals()[input_cancer()]()
-
+ #uhdihf
 def log1():
     print(1)
 
