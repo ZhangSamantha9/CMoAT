@@ -35,7 +35,7 @@ def user_cancername(cancername):
 def gene_date(cancer):
     proteomics = pd.DataFrame(cancer.get_proteomics())
     tumorProt = pd.DataFrame(cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
-                                                         metadata_cols='Proteomics_Tumor_Normal'))
+                                                         metadata_cols='Sample_Tumor_Normal'))
     tumor_pro_data = tumorProt[tumorProt.Proteomics_Tumor_Normal == 'Tumor']
 
     return proteomics, tumorProt, tumor_pro_data
