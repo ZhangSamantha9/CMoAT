@@ -18,4 +18,4 @@ import correlation_analysis
 
 # correlation_analysis.analysis("Luad","EGFR","MET")
 
-correlation_analysis.user_cancername("luad")
+correlation_analysis.user_cancername("Endometrial")
