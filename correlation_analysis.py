@@ -26,11 +26,12 @@ def gene_date(cancer):
     tumorProt = pd.DataFrame(cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
                                                          metadata_cols='Sample_Tumor_Normal'))
     tumor_pro_data = tumorProt[tumorProt.Sample_Tumor_Normal == 'Tumor']
-    print(tumor_pro_data)
+    tumor_pro_data.to_csv('test.csv')
     return tumor_pro_data
 
+# def correlation_curve(gene1,gene2):
+#     tumor_pro_data=user_cancername("Endometrial")
 
-#tumor_pro_data=
 # def user_genes(gene1,gene2):
 #     print("receive parameters",gene1,gene2)
 #     for gene1_proteomics in gene_date():
