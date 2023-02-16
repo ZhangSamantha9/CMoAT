@@ -22,31 +22,34 @@ def user_cancername(cancername):
 
 
 def gene_date(cancer):
-    proteomics = pd.DataFrame(cancer.get_proteomics())
+    proteomics = cancer.get_proteomics()
+    proteomics = pd.DataFrame(ut.reduce_multiindex(df=proteomics, levels_to_drop="Database_ID"))
+    # proteomics.to_csv('test.csv')
     tumorProt = pd.DataFrame(cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
                                                          metadata_cols='Sample_Tumor_Normal'))
     tumor_pro_data = tumorProt[tumorProt.Sample_Tumor_Normal == 'Tumor']
-    tumor_pro_data.to_csv('test.csv')
+    # tumor_pro_data.to_csv('test.csv')
     return tumor_pro_data
 
-# def correlation_curve(gene1,gene2):
-#     tumor_pro_data=user_cancername("Endometrial")
+tumor_pro_data=user_cancername()
 
-# def user_genes(gene1,gene2):
-#     print("receive parameters",gene1,gene2)
-#     for gene1_proteomics in gene_date():
-#         if gene1_proteomics in gene_date().column:
-#             gene1 = gene1_proteomics
-#     for gene2_proteomics in gene_date():
-#         if gene2_proteomics in gene_date().column:
-#             gene1 = gene2_proteomics
-#     pearson_correlation_array = stats.pearsonr(gene1, gene2)
-#     sns.set(style="darkgrid")
-#     plot = sns.regplot(x=gene1, y=gene2)
-#     plot.set(xlabel='A1BG', ylabel='EGFR',
-#          title='gene correlation')
-#     matplotlib.pyplot.savefig('gene_correlation')
-#     print(pearson_correlation_array)
+def gene_correlation(gene1,gene2):
+    print("receive parameters:", gene1, gene2)
+    if gene1 in tumor_pro_data.column:
+        return gene1
+    else:
+        print("No data for gene 1 is found")
+    if gene2 in tumor_pro_data.column:
+        return gene2
+    else:
+        print("No data for gene 2 is found")
+    pearson_correlation_array = stats.pearsonr(gene1, gene2)
+    sns.set(style="darkgrid")
+    plot = sns.regplot(x=gene1, y=gene2)
+    plot.set(xlabel=gene1.column, ylabel=gene2.column,
+         title='gene correlation')
+    matplotlib.pyplot.savefig('gene_correlation')
+    print(pearson_correlation_array)
 
 
 

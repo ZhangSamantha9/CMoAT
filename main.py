@@ -19,3 +19,4 @@ import correlation_analysis
 # correlation_analysis.analysis("Luad","EGFR","MET")
 
 correlation_analysis.user_cancername("Luad")
+correlation_analysis.correlation_curve(gene1='EGFR',gene2='MET')
