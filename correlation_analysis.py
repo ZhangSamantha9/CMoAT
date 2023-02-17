@@ -11,11 +11,11 @@ import seaborn as sns
 CANCER_DATA_DIC = {'Luad':cptac.Luad(), 'Endometrial': cptac.Endometrial()}
 
 
-def user_cancer_name(cancer_name):
+def get_cancer_data(cancer_name):
     print("receive parameters: ", cancer_name)
 
     if CANCER_DATA_DIC.__contains__(cancer_name):
-        return clean_dataframe(CANCER_DATA_DIC[cancer_name])
+        return cancer_data_preprocess(CANCER_DATA_DIC[cancer_name])
     else:
         print(cancer_name, 'is not in the dictionary')
 
@@ -29,41 +29,52 @@ def user_cancer_name(cancer_name):
     #     return tumor_pro_data
 
 
-def clean_dataframe(cancer):
+def cancer_data_preprocess(cancer):
     #proteomics = cancer.get_proteomics()
     # proteomics.to_csv('test.csv')
-    tumorProt = cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
+    cancer_row_data = cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
                                                          metadata_cols='Sample_Tumor_Normal')
-    reduced_tumor_prot = pd.DataFrame(ut.reduce_multiindex(df=tumorProt, levels_to_drop="Database_ID"))
-    tumor_pro_data = reduced_tumor_prot [reduced_tumor_prot.Sample_Tumor_Normal == 'Tumor']
+    reduced_cancer_data = pd.DataFrame(ut.reduce_multiindex(df=cancer_row_data, levels_to_drop="Database_ID",quiet=True))
+    cancer_data = reduced_cancer_data [reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
     # tumor_pro_data.to_csv('test.csv')
-    return tumor_pro_data
+    return cancer_data
 
-def gene_correlation(gene1,gene2,tumor_pro_data):
+def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     print("receive parameters:", gene1, gene2)
 
-    tumor_colums = tumor_pro_data.columns
+    tumor_colums = cancer_data_analysis.columns
 
     tail = '_proteomics'
-
-    a=f'is {gene1} in list: {gene1 in tumor_colums}'
-    b=f'is {gene2} in list: {gene2 in tumor_colums}'
-    c=f'is {gene2} in list: {(gene2+tail) in tumor_colums}'
+    gene1_proteomics_name = gene1 + tail
+    gene2_proteomics_name = gene2 + tail
 
 
-    if gene1 in tumor_pro_data.columns:
-        return gene1
+    # a=f'is {gene1} in list: {gene1 in tumor_colums}'
+    # b=f'is {gene2} in list: {gene2 in tumor_colums}'
+    # c=f'is {gene2} in list: {(gene2+tail) in tumor_colums}'
+
+
+    if gene1_proteomics_name in cancer_data_analysis.columns:
+        print('gene 1 successfully matched')
     else:
         print("No data for gene 1 is found")
-    if gene2 in tumor_pro_data.columns:
-        return gene2
+
+    if gene2_proteomics_name in cancer_data_analysis.columns:
+        print('gene 2 successfully matched')
     else:
         print("No data for gene 2 is found")
-    pearson_correlation_array = stats.pearsonr(gene1, gene2)
+
+    gene1_data = cancer_data_analysis[gene1_proteomics_name]
+    print('data for gene 1 done')
+    gene2_data = cancer_data_analysis[gene2_proteomics_name]
+    print('data for gene 2 done')
+
+
+    pearson_correlation_array = stats.pearsonr(gene1_data, gene2_data)
     sns.set(style="darkgrid")
-    plot = sns.regplot(x=gene1, y=gene2)
-    plot.set(xlabel=gene1.column, ylabel=gene2.column,
-         title='gene correlation')
+    plot = sns.regplot(x=gene1_data, y=gene2_data)
+    plot.set(xlabel=gene1, ylabel=gene2,
+         title='gene correlation for'+ gene1 + gene2)
     matplotlib.pyplot.savefig('gene_correlation')
     print(pearson_correlation_array)
 
