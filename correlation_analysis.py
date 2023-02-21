@@ -70,13 +70,15 @@ def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     print('data for gene 2 done')
 
 
-    pearson_correlation_array = stats.pearsonr(gene1_data, gene2_data)
+    R = str(round(stats.pearsonr(gene1_data, gene2_data).statistic,6))
+    p_value=str(stats.pearsonr(gene1_data, gene2_data).pvalue)
     sns.set(style="darkgrid")
     plot = sns.regplot(x=gene1_data, y=gene2_data)
     plot.set(xlabel=gene1, ylabel=gene2,
-         title='gene correlation for'+ gene1 + gene2)
+         title='Gene correlation for '+ gene1 +' and '+ gene2+"\n"+'R = '+R+'  p-value = '+p_value)
+    # plt.text(1,1,pearson_correlation_array)
     matplotlib.pyplot.savefig('gene_correlation')
-    print(pearson_correlation_array)
+    print(R,p_value)
 
 
 
