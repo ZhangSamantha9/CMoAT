@@ -8,9 +8,12 @@ import matplotlib.pyplot as plt
 matplotlib.use('agg')
 import seaborn as sns
 
+
+# 导入数据库并把他们存到字典中）
 CANCER_DATA_DIC = {'Luad':cptac.Luad(), 'Endometrial': cptac.Endometrial()}
 
 
+# 定义处理癌症数据的函数，如果找到癌症数据，则处理之。否则打印没找到
 def get_cancer_data(cancer_name):
     print("receive parameters: ", cancer_name)
 
@@ -29,6 +32,7 @@ def get_cancer_data(cancer_name):
     #     return tumor_pro_data
 
 
+# 癌症数据处理过程：将临床数据与表达数据合成一个，再舍去多重索引，最后挑选肿瘤组织的数据
 def cancer_data_preprocess(cancer):
     #proteomics = cancer.get_proteomics()
     # proteomics.to_csv('test.csv')
@@ -39,6 +43,8 @@ def cancer_data_preprocess(cancer):
     # tumor_pro_data.to_csv('test.csv')
     return cancer_data
 
+
+# 绘制相关性曲线
 def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     print("receive parameters:", gene1, gene2)
 
@@ -53,7 +59,7 @@ def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     # b=f'is {gene2} in list: {gene2 in tumor_colums}'
     # c=f'is {gene2} in list: {(gene2+tail) in tumor_colums}'
 
-
+    # 找gene1，gene2
     if gene1_proteomics_name in cancer_data_analysis.columns:
         print('gene 1 successfully matched')
     else:
@@ -69,9 +75,11 @@ def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     gene2_data = cancer_data_analysis[gene2_proteomics_name]
     print('data for gene 2 done')
 
-
+    # 计算相关性系数r和p_value，相关性系数R保留6位小数
     R = str(round(stats.pearsonr(gene1_data, gene2_data).statistic,6))
     p_value=str(stats.pearsonr(gene1_data, gene2_data).pvalue)
+
+    # 画图设置
     sns.set(style="darkgrid")
     plot = sns.regplot(x=gene1_data, y=gene2_data)
     plot.set(xlabel=gene1, ylabel=gene2,
