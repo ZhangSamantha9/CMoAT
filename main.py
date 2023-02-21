@@ -1,4 +1,3 @@
-import cptac
 import correlation_analysis
 import argparse
 
