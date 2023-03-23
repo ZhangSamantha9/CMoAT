@@ -1,42 +1,3 @@
-# from tkinter import *
-# import tkinter.messagebox as messagebox
-# import correlation_analysis
-#
-# class Application(Frame):
-#     def __init__(self, master=None):
-#         Frame.__init__(self, master)
-#         self.grid()
-#         self.createWidgets()
-#     def createWidgets(self):
-#
-#         self.title = Label(self, text='Gene correlation')
-#         self.title.grid(row=1, column=0)
-#
-#         self.cancer_name = Label(self, text='Cancer name',anchor="w", width=20)
-#         self.cancer_name.grid(row=0, column=1, sticky="ew")
-#         self.cancer_entry = Entry()
-#         self.cancer_entry.grid(row=1, column=1)
-#         self.gene_1 = Label(self, text='Gene 1',anchor="w", width=20)
-#         self.gene_1.grid(row=0, column=3, sticky="ew")
-#         self.gene1_entry = Entry()
-#         self.gene1_entry.grid(row=1, column=3)
-#         self.gene_2 = Label(self, text='Gene 2',anchor="w", width=20)
-#         self.gene_2.grid()
-#         self.gene2_entry = Entry()
-#         self.gene2_entry.grid(row=1, column=4)
-#         self.quitButton = Button(self, text='Quit', command=self.quit)
-#         self.quitButton.grid()
-#
-#     # def hello(self):
-#     #     name = self.nameInput.get() or 'world'
-#     #     messagebox.showinfo('Message', 'Hello, %s' % name)
-#
-# app = Application()
-# # 设置窗口标题:
-# app.master.title('Gene correlation')
-# app.master.maxsize(600, 800)
-# # 主消息循环:
-# app.mainloop()
 
 import tkinter as tk
 from tkinter import ttk
@@ -46,9 +7,9 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.geometry("600x700")
+        self.geometry("400x500")
         self.title('Analysis')
-        # self.resizable(0, 0)
+        self.resizable(0, 0)
 
         # configure the grid
         self.columnconfigure(0, weight=1)
@@ -59,9 +20,9 @@ class App(tk.Tk):
     def create_widgets(self):
         # username
         correlation_label = ttk.Label(self, text="Gene correlation")
-        correlation_label.grid(row=0,sticky='nsew', padx=5, pady=5)
+        correlation_label.grid()
 
-        cancername_label = ttk.Label(self, text="cancer name:")
+        cancername_label = ttk.Label(self, text="Cancer name:")
         cancername_label.grid(column=0, row=1, sticky=tk.W, padx=5, pady=5)
 
         cancer_name_entry = ttk.Entry(self)
@@ -84,6 +45,9 @@ class App(tk.Tk):
         # login button
         analysis_button = ttk.Button(self, text="Analysis")
         analysis_button.grid(column=1, row=4, sticky=tk.E, padx=5, pady=5)
+
+        # img = tk.PhotoImage(file="C:\\Users\\SUISUISHOU\\Downloads\\1.png")
+        # img1 = img.subsample(2, 2)
 
 
 if __name__ == "__main__":
