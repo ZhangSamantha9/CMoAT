@@ -20,7 +20,7 @@ class App(tk.Tk):
     def create_widgets(self):
         # username
         correlation_label = ttk.Label(self, text="Gene correlation")
-        correlation_label.grid()
+        correlation_label.grid(column=0, row=0, sticky=tk.W, padx=5, pady=5)
 
         cancername_label = ttk.Label(self, text="Cancer name:")
         cancername_label.grid(column=0, row=1, sticky=tk.W, padx=5, pady=5)
@@ -46,8 +46,11 @@ class App(tk.Tk):
         analysis_button = ttk.Button(self, text="Analysis")
         analysis_button.grid(column=1, row=4, sticky=tk.E, padx=5, pady=5)
 
-        # img = tk.PhotoImage(file="C:\\Users\\SUISUISHOU\\Downloads\\1.png")
-        # img1 = img.subsample(2, 2)
+        img = tk.PhotoImage(file="C:\\Users\\126614\\Downloads\\documents.png")
+        img = img.subsample(1, 1)
+        image = ttk.Label(image=img)
+        image.image = img
+        image.grid()
 
 
 if __name__ == "__main__":
