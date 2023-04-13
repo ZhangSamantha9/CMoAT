@@ -1,5 +1,5 @@
-import correlation_analysis
 import argparse
+import correlation_analysis_command
 
 parser = argparse.ArgumentParser(description='Calculate two gene correlation')
 parser.add_argument('cancer_name', type=str, help='Choose from: Brca,Ccrcc,Colon,Endometrial,Gbm,Hnscc,Lscc,Luad,Ovarian,Pdac,UcecConf,GbmConf')
@@ -14,5 +14,5 @@ gene2 = args.gene_2
 # tumor_data = correlation_analysis.get_cancer_data("Luad")
 # correlation_analysis.gene_correlation_curve('EGFR', 'MET', tumor_data)
 
-tumor_data = correlation_analysis.get_cancer_data(cancer_name)
-correlation_analysis.gene_correlation_curve(gene1,gene2,tumor_data)
+tumor_data = correlation_analysis_command.get_cancer_data(cancer_name)
+correlation_analysis_command.gene_correlation_curve(gene1,gene2,tumor_data)
