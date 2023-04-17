@@ -1,7 +1,14 @@
 
 import tkinter as tk
+from doctest import master
 from tkinter import ttk
 import correlation_analysis_GUI
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy import stats
 from PIL import Image, ImageTk
 
 
@@ -9,13 +16,14 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.geometry("600x500")
+        self.geometry("600x650")
         self.title('Analysis')
         self.resizable(0, 0)
 
         # configure the grid
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=3)
+        self.root = root
 
         self.create_widgets()
 
@@ -48,36 +56,39 @@ class App(tk.Tk):
 
 
         # login button
-        analysis_button = ttk.Button(self, text="Analysis",command=self.gene_correlation_curve_gui)
+        analysis_button = ttk.Button(self, text="Analysis", command=self.draw_correlation_curve)
         analysis_button.grid(column=1, row=4, sticky=tk.E, padx=5, pady=5)
 
-        # self.pil_image = Image.open(self.gene_correlation_curve_gui.correlation_plot_result)
-        # self.tk_image = ImageTk.PhotoImage(self.pil_image)
-        # self.label = tk.Label(self.window, image=self.tk_image)
-        # self.label.grid()
+        self.figure = self.draw_correlation_curve()
 
-        # img = tk.PhotoImage(file=".\\gene_corelation\\GUI_tool\\gene_correlation.png")
-        #
-        # img = tk.PhotoImage()
-        # img = img.subsample(1, 1)
-        # image = ttk.Label(image=img)
-        # image.image = img
+        self.canvas = FigureCanvasTkAgg(self.figure, self.root)
+        self.canvas.get_tk_widget().pack()
 
 
+        R_label = ttk.Label(self, text='r')
+        R_label.grid(column=0, row=6, sticky=tk.W, padx=5, pady=5)
+        pvalue_label = ttk.Label(self, text='p')
+        pvalue_label.grid(column=0, row=7, sticky=tk.W, padx=5, pady=5)
     # 绘制相关性曲线
-    def gene_correlation_curve_gui(self):
+    def draw_correlation_curve(self):
         cancer_name=self.var1.get()
         gene1 = self.var2.get()
         gene2 = self.var3.get()
+
         tumor_data_gui = correlation_analysis_GUI.get_cancer_data(cancer_name)
-        correlation_analysis_GUI.gene_correlation_curve(gene1, gene2,tumor_data_gui)
+
+        gene1_data,gene2_data=correlation_analysis_GUI.gene_correlation_curve(gene1, gene2,tumor_data_gui)
+        sns.set(style="darkgrid")
+        gene_corrlation_plot = sns.regplot(x=gene1_data, y=gene2_data)
+        gene_corrlation_plot.set(xlabel=str(self.var2), ylabel=str(self.var3))
+        return  gene_corrlation_plot
 
 
+if __name__ == '__main__':
+    root = tk.Tk()
+    app=App()
+    root.mainloop()
 
-
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
 
 
 
