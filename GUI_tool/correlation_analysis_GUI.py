@@ -72,17 +72,19 @@ def gene_correlation_curve(gene1, gene2, cancer_data_analysis):
     gene2_data = cancer_data_analysis[gene2_proteomics_name]
     print('data for gene 2 done')
 
-    return gene1_data,gene2_data
+
     # 计算相关性系数r和p_value，相关性系数R保留6位小数
-    # R = '{:.6f}'.format(stats.pearsonr(gene1_data, gene2_data).statistic)
-    # p_value = '{:.4e}'.format(stats.pearsonr(gene1_data, gene2_data).pvalue)
-    #
-    #
-    # # 画图设置
-    # sns.set(style="darkgrid")
-    # gene_corrlation_plot = sns.regplot(x=gene1_data, y=gene2_data)
-    # gene_corrlation_plot.set(xlabel=gene1, ylabel=gene2,
-    #          title='Gene correlation for ' + gene1 + ' and ' + gene2 + "\n" + 'R = ' + R + '  p-value = ' + p_value)
-    #
-    # matplotlib.pyplot.savefig('gene_correlation')
-    # print('Figure done')
+    R = '{:.6f}'.format(stats.pearsonr(gene1_data, gene2_data).statistic)
+    p_value = '{:.4e}'.format(stats.pearsonr(gene1_data, gene2_data).pvalue)
+
+
+    # 画图设置
+    sns.set(style="darkgrid")
+    gene_corrlation_plot = sns.regplot(x=gene1_data, y=gene2_data)
+    gene_corrlation_plot.set(xlabel=gene1, ylabel=gene2,
+             title='Gene correlation for ' + gene1 + ' and ' + gene2 + "\n" + 'R = ' + R + '  p-value = ' + p_value)
+    filename:str=gene1 + ' and ' + gene2+' correlation curve'
+    matplotlib.pyplot.savefig(fname= filename)
+
+    print('Figure done')
+    return filename
