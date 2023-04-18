@@ -2,92 +2,122 @@ import tkinter as tk
 from tkinter import ttk
 import correlation_analysis_GUI
 import os
-from PIL import ImageTk, Image
 
 
+class ProteinAnalysisGUI(tk.Tk):
 
-class protein_analysis_GUI:
-    def __init__(self,master):
-        master.title("Protein Analysis")
+    def init_correlation_tab(self, tab: ttk.Frame):
+        """
+        Init correlation frame in the input param [tab]
+        """
+        input_frm = ttk.Frame(tab, padding=5)
+        input_frm.pack(expand=1, fill='x', anchor='n')
 
-        master.geometry("650x700")
-        master.resizable(0, 0)
+        correlation_label = ttk.Label(input_frm, text="Gene correlation")
+        correlation_label.pack()
 
+        cancername_frm = ttk.Frame(input_frm)
+        cancername_frm.pack(expand=1, fill='x')
 
-        text_box=ttk.Frame(master)
-        text_box.grid(sticky="W")
+        cancername_label = ttk.Label(cancername_frm, text="Cancer name:")
+        cancername_label.pack(side='left', anchor='w')
 
-        correlation_label = ttk.Label(text_box, text="Gene correlation")
-        correlation_label.grid(row=0, column=0, sticky="W")
+        self.cancername_value = tk.StringVar()
+        cancer_name_entry = ttk.Entry(
+            cancername_frm, textvariable=self.cancername_value)
+        cancer_name_entry.pack(side='right', anchor='e')
 
+        gene1_frm:ttk.Frame = ttk.Frame(input_frm)
+        gene1_frm.pack(expand=1, fill='x')
 
-        cancername_label = ttk.Label(text_box, text="Cancer name:")
-        cancername_label.grid(row=1, column=0, sticky="W")
+        gene1_label = ttk.Label(gene1_frm, text="Gene 1:")
+        gene1_label.pack(side='left', anchor='w')
 
-        self.var1 = tk.StringVar()
-        cancer_name_entry = ttk.Entry(text_box,textvariable=self.var1)
-        cancer_name_entry.grid(row=1, column=1, pady=10)
+        self.gene1_value = tk.StringVar()
+        gene1_entry = ttk.Entry(gene1_frm, textvariable=self.gene1_value)
+        gene1_entry.pack(side='right', anchor='e')
 
-        gene1_label = ttk.Label(text_box, text="Gene 1:")
-        gene1_label.grid(row=2, column=0, sticky="W")
+        gene2_frm: ttk.Frame = ttk.Frame(input_frm)
+        gene2_frm.pack(expand=1, fill='x')
 
-        self.var2 = tk.StringVar()
-        gene1_entry = ttk.Entry(text_box,textvariable=self.var2)
-        gene1_entry.grid(row=2, column=1, pady=10)
+        gene2_label = ttk.Label(gene2_frm, text="Gene 2:")
+        gene2_label.pack(side='left', anchor='w')
 
-
-        gene2_label = ttk.Label(text_box, text="Gene 2:")
-        gene2_label.grid(row=3, column=0, sticky="W")
-
-        self.var3 = tk.StringVar()
-        gene2_entry = ttk.Entry(text_box,textvariable=self.var3)
-        gene2_entry.grid(row =3, column = 1, pady = 2)
+        self.gene2_value = tk.StringVar()
+        gene2_entry = ttk.Entry(gene2_frm, textvariable=self.gene2_value)
+        gene2_entry.pack(side='right', anchor='e')
 
         # login button
-        analysis_button = ttk.Button(text_box, text="Analysis", command=self.draw_correlation_curve)
-        analysis_button.grid(row=4,column=0,columnspan=3,sticky="E")
+        analysis_button = ttk.Button(
+            input_frm, text="Analysis", command=self.draw_correlation_curve)
+        analysis_button.pack(side='right', anchor='e')
 
+        image_box = ttk.Frame(tab)
+        image_box.pack()
 
-        image_box=ttk.Frame()
-        image_box.grid(sticky="W")
-        img = tk.PhotoImage()
-        img = img.subsample(1,1)
-        self.image = ttk.Label(image_box,image=img)
-        self.image.image = img
-        self.image.grid(row=5, rowspan=2, column=1, padx=20,columnspan=3)
+        self.image = ttk.Label(image_box, image=tk.PhotoImage())
+        self.image.pack()
 
-    # 绘制相关性曲线
-    def draw_correlation_curve(self):
-        cancer_name=self.var1.get()
-        gene1 = self.var2.get()
-        gene2 = self.var3.get()
+    def init_expression_tab(self, tab):
+        """
+        Init expression frame in the input param [tab]
+        """
 
-        tumor_data_gui = correlation_analysis_GUI.get_cancer_data(cancer_name)
+        ttk.Label(tab, text="Expression").pack()
 
-        filename= correlation_analysis_GUI.gene_correlation_curve(gene1, gene2,tumor_data_gui)
-        fullpath=os.path.join(os.getcwd(),filename)+'.png'
+    def __init__(self):
+        # init super
+        super().__init__()
 
+        self.title("Protein Analysis")
+        self.geometry("650x700")
+        self.resizable(0, 0)
 
+        # Create notebook (tab menu)
+        notebook:ttk.Notebook = ttk.Notebook(self)
+        notebook.pack(expand=1, fill='both')
 
-        img = tk.PhotoImage(file=fullpath)
-        img = img.subsample(1,1)
+        # Create & init correlation&expression tab frame
+        correlation_frm:ttk.Frame = ttk.Frame(notebook)
+        self.init_correlation_tab(correlation_frm)
+        expression_frm:ttk.Frame = ttk.Frame(notebook)
+        self.init_expression_tab(expression_frm)
+
+        # Add to Notebook (tab menu)
+        notebook.add(correlation_frm, text='Correlation')
+        notebook.add(expression_frm, text='Expression')
+
+    def render_correlation_image(self, img: tk.PhotoImage):
+        """
+        Render image to correlation image label
+        """
         self.image.configure(image=img)
         self.image.image = img
 
+    # 绘制相关性曲线
+    def draw_correlation_curve(self):
+        cancer_name = self.cancername_value.get()
+        gene1 = self.gene1_value.get()
+        gene2 = self.gene2_value.get()
 
-# 创建主窗口
-root = tk.Tk()
+        tumor_data_gui = correlation_analysis_GUI.get_cancer_data(cancer_name)
 
-# 运行GUI
-my_gui =protein_analysis_GUI(root)
+        filename = correlation_analysis_GUI.gene_correlation_curve(
+            gene1, gene2, tumor_data_gui)
+        fullpath = os.path.join(os.getcwd(), filename)+'.png'
 
-# 运行主循环
-root.mainloop()
-
-
-
+        img = tk.PhotoImage(file=fullpath)
+        img = img.subsample(1, 1)
+        self.render_correlation_image(img)
 
 
+if __name__ == '__main__':
+    # Enable high dpi support
+    from ctypes import windll
+    windll.shcore.SetProcessDpiAwareness(1)
 
+    # 运行GUI
+    my_gui = ProteinAnalysisGUI()
 
-
+    # 运行主循环
+    my_gui.mainloop()
