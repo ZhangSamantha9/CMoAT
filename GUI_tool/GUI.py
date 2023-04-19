@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 import os
-import GUI_init
 
+# init APP with GUI
+import GUI_init
+GUI_init.GUI_init()
 
 class ProteinAnalysisGUI(tk.Tk):
     def __init__(self):
@@ -117,7 +119,7 @@ class ProteinAnalysisGUI(tk.Tk):
 
 
 if __name__ == '__main__':
-    GUI_init.GUI_init()
+    
 
     # 运行GUI
     my_gui = ProteinAnalysisGUI()
