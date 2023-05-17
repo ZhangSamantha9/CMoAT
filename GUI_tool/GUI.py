@@ -1,10 +1,37 @@
 import tkinter as tk
 from tkinter import ttk
-import correlation_analysis_GUI
 import os
 
+# init APP with GUI
+import GUI_init
+GUI_init.GUI_init()
 
 class ProteinAnalysisGUI(tk.Tk):
+    def __init__(self):
+        # Enable high dpi support
+        from ctypes import windll
+        windll.shcore.SetProcessDpiAwareness(1)
+
+        # init super
+        super().__init__()
+
+        self.title("Protein Analysis")
+        self.geometry("650x700")
+        self.resizable(0, 0)
+
+        # Create notebook (tab menu)
+        notebook:ttk.Notebook = ttk.Notebook(self)
+        notebook.pack(expand=1, fill='both')
+
+        # Create & init correlation&expression tab frame
+        correlation_frm:ttk.Frame = ttk.Frame(notebook)
+        self.init_correlation_tab(correlation_frm)
+        expression_frm:ttk.Frame = ttk.Frame(notebook)
+        self.init_expression_tab(expression_frm)
+
+        # Add to Notebook (tab menu)
+        notebook.add(correlation_frm, text='Correlation')
+        notebook.add(expression_frm, text='Expression')
 
     def init_correlation_tab(self, tab: ttk.Frame):
         """
@@ -65,27 +92,6 @@ class ProteinAnalysisGUI(tk.Tk):
 
         ttk.Label(tab, text="Expression").pack()
 
-    def __init__(self):
-        # init super
-        super().__init__()
-
-        self.title("Protein Analysis")
-        self.geometry("650x700")
-        self.resizable(0, 0)
-
-        # Create notebook (tab menu)
-        notebook:ttk.Notebook = ttk.Notebook(self)
-        notebook.pack(expand=1, fill='both')
-
-        # Create & init correlation&expression tab frame
-        correlation_frm:ttk.Frame = ttk.Frame(notebook)
-        self.init_correlation_tab(correlation_frm)
-        expression_frm:ttk.Frame = ttk.Frame(notebook)
-        self.init_expression_tab(expression_frm)
-
-        # Add to Notebook (tab menu)
-        notebook.add(correlation_frm, text='Correlation')
-        notebook.add(expression_frm, text='Expression')
 
     def render_correlation_image(self, img: tk.PhotoImage):
         """
@@ -100,6 +106,7 @@ class ProteinAnalysisGUI(tk.Tk):
         gene1 = self.gene1_value.get()
         gene2 = self.gene2_value.get()
 
+        import correlation_analysis_GUI
         tumor_data_gui = correlation_analysis_GUI.get_cancer_data(cancer_name)
 
         filename = correlation_analysis_GUI.gene_correlation_curve(
@@ -112,9 +119,7 @@ class ProteinAnalysisGUI(tk.Tk):
 
 
 if __name__ == '__main__':
-    # Enable high dpi support
-    from ctypes import windll
-    windll.shcore.SetProcessDpiAwareness(1)
+    
 
     # 运行GUI
     my_gui = ProteinAnalysisGUI()
