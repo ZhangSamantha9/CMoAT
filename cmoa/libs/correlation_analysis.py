@@ -5,8 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 from cptac import dataset
-
-
+import os
 
 
 # 癌症数据处理过程：将临床数据与表达数据合成一个，再舍去多重索引，最后挑选肿瘤组织的数据
@@ -58,5 +57,13 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
     plot.set(xlabel=gene1, ylabel=gene2,
              title='Gene correlation for ' + gene1 + ' and ' + gene2 + "\n" + 'R = ' + R + '  p-value = ' + p_value)
     # plt.text(1,1,pearson_correlation_array)
-    plt.savefig('gene_correlation')
-    print('Figure done')
+
+    figPath = os.path.join(os.getcwd(), 'correlation.png')
+    plt.savefig(figPath, format='png')
+
+    if (os.path.exists(figPath)):
+        print(f'Figure saved at {figPath}')
+        return figPath
+    else:
+        print('Figure not saved')
+        return None
