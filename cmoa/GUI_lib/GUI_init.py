@@ -1,7 +1,4 @@
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-from app_init import packages_check
+from cmoa.GUI_lib.app_init import packages_check
 
 import tkinter as tk
 from tkinter import simpledialog
