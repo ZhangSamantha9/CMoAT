@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-import os
 
-# init APP with GUI
-import GUI_init
-GUI_init.GUI_init()
+from cmoa.libs import cptac_data as cd
+from cmoa.libs import correlation_analysis as ca
 
 class ProteinAnalysisGUI(tk.Tk):
     def __init__(self):
@@ -20,13 +18,13 @@ class ProteinAnalysisGUI(tk.Tk):
         self.resizable(0, 0)
 
         # Create notebook (tab menu)
-        notebook:ttk.Notebook = ttk.Notebook(self)
+        notebook: ttk.Notebook = ttk.Notebook(self)
         notebook.pack(expand=1, fill='both')
 
         # Create & init correlation&expression tab frame
-        correlation_frm:ttk.Frame = ttk.Frame(notebook)
+        correlation_frm: ttk.Frame = ttk.Frame(notebook)
         self.init_correlation_tab(correlation_frm)
-        expression_frm:ttk.Frame = ttk.Frame(notebook)
+        expression_frm: ttk.Frame = ttk.Frame(notebook)
         self.init_expression_tab(expression_frm)
 
         # Add to Notebook (tab menu)
@@ -54,7 +52,7 @@ class ProteinAnalysisGUI(tk.Tk):
             cancername_frm, textvariable=self.cancername_value)
         cancer_name_entry.pack(side='right', anchor='e')
 
-        gene1_frm:ttk.Frame = ttk.Frame(input_frm)
+        gene1_frm: ttk.Frame = ttk.Frame(input_frm)
         gene1_frm.pack(expand=1, fill='x')
 
         gene1_label = ttk.Label(gene1_frm, text="Gene 1:")
@@ -92,7 +90,6 @@ class ProteinAnalysisGUI(tk.Tk):
 
         ttk.Label(tab, text="Expression").pack()
 
-
     def render_correlation_image(self, img: tk.PhotoImage):
         """
         Render image to correlation image label
@@ -106,23 +103,20 @@ class ProteinAnalysisGUI(tk.Tk):
         gene1 = self.gene1_value.get()
         gene2 = self.gene2_value.get()
 
-        import correlation_analysis_GUI
-        tumor_data_gui = correlation_analysis_GUI.get_cancer_data(cancer_name)
+        cancer_data = cd.load_dataset(cancer_name)
+        if cancer_data:
+            tumor_data = ca.dataset_preprocess(cancer_data)
+            path = ca.draw_correlation_curve(gene1, gene2, tumor_data)
 
-        filename = correlation_analysis_GUI.gene_correlation_curve(
-            gene1, gene2, tumor_data_gui)
-        fullpath = os.path.join(os.getcwd(), filename)+'.png'
+            if path:
+                img = tk.PhotoImage(file=path)
+                img = img.subsample(1, 1)
+                self.render_correlation_image(img)
 
-        img = tk.PhotoImage(file=fullpath)
-        img = img.subsample(1, 1)
-        self.render_correlation_image(img)
+        else:
+            print(f'Load dataset {cancer_name} failed.')
 
 
 if __name__ == '__main__':
-    
-
-    # 运行GUI
     my_gui = ProteinAnalysisGUI()
-
-    # 运行主循环
     my_gui.mainloop()
