@@ -1,4 +1,6 @@
-class AnalysisTaskBase(object):
+from abc import abstractmethod, ABC
+
+class AnalysisTaskBase(ABC):
     """
     The base class of analysis tasks
     """
@@ -6,12 +8,23 @@ class AnalysisTaskBase(object):
     def __init__(self) -> None:
         pass
 
-    def preprocess(self) -> None:
+    @abstractmethod
+    def preprocess(self) -> bool:
+        """
+        The preprocess function
+        """
         pass
 
-    def process(self) -> None:
+    @abstractmethod
+    def process(self) -> bool:
+        """
+        The main process function
+        """
         pass
 
     @property
     def result(self):
+        """
+        The result property, use this to return the task result
+        """
         pass
