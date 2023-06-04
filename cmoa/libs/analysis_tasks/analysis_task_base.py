@@ -9,14 +9,14 @@ class AnalysisTaskBase(ABC):
         pass
 
     @abstractmethod
-    def preprocess(self) -> bool:
+    def preprocess(self) -> None:
         """
         The preprocess function
         """
         pass
 
     @abstractmethod
-    def process(self) -> bool:
+    def process(self) -> None:
         """
         The main process function
         """
@@ -28,3 +28,18 @@ class AnalysisTaskBase(ABC):
         The result property, use this to return the task result
         """
         pass
+
+    def run_task(self):
+        self.preprocess()
+        self.process()
+        return self.result
+
+class PreprocessError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
+class ProcessError(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message

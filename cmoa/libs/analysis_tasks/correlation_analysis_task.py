@@ -1,8 +1,12 @@
-from .analysis_task_base import AnalysisTaskBase
-import pandas as pd
-from cmoa.libs import cptac_data as cd
+import os
 
+import pandas as pd
+from scipy import stats
 import cptac.utils as ut
+import seaborn as sns
+
+from cmoa.libs import cptac_data as cd
+from .analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
 
 
 class CorrelationAnalysisTask(AnalysisTaskBase):
@@ -14,13 +18,12 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         self.gene2_name = gene2
 
     def preprocess(self):
-        super().preprocess()
 
-        self.cancer_dataset = cd.load_dataset(self.cancer_name)
-        if not self.cancer_dataset:
-            return False
+        cancer_dataset = cd.load_dataset(self.cancer_name)
+        if not cancer_dataset:
+            raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure.')
 
-        cancer_raw_data = self.cancer_dataset.join_metadata_to_omics(
+        cancer_raw_data = cancer_dataset.join_metadata_to_omics(
             metadata_df_name='clinical',
             omics_df_name='proteomics',
             metadata_cols='Sample_Tumor_Normal'
@@ -35,4 +38,38 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
 
         # TODO: 验证是否只需要返回Tumor类别
         self.preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
-        return True
+    
+    def process(self) -> None:
+        tail = '_proteomics'
+        gene1_proteomics_name = self.gene1_name + tail
+        gene2_proteomics_name = self.gene2_name + tail
+
+        if gene1_proteomics_name not in self.preprocess_data.columns:
+            raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
+        if gene2_proteomics_name not in self.preprocess_data.columns:
+            raise ProcessError(f'Gene [{gene2_proteomics_name}] not in dataframe')
+        
+        gene1_series = self.preprocess_data[gene1_proteomics_name]
+        gene2_series = self.preprocess_data[gene2_proteomics_name]
+
+        pearsonr_result = stats.pearsonr(gene1_series, gene2_series)
+        r_value = '{:.6f}'.format(pearsonr_result.statistic)
+        p_value = '{:.4e}'.format(pearsonr_result.pvalue)
+
+        sns.set(style="darkgrid")
+        plot = sns.regplot(x=gene1_series, y=gene2_series)
+        plot.set(xlabel=self.gene1_name, ylabel=self.gene2_name,
+                title=f'{self.cancer_name} Gene correlation for {self.gene1_name} and {self.gene2_name}\nR = {r_value} p-value = {p_value}')
+
+        figPath = os.path.join(os.getcwd(), 'correlation.png')
+        plot.get_figure().savefig(figPath)
+
+        if (os.path.exists(figPath)):
+            self.figPath = figPath
+        else:
+            raise ProcessError(f'Could not save figer at {figPath}')
+
+        @property
+        def result(self):
+            return self.figPath
+
