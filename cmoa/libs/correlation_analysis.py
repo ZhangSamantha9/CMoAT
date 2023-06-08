@@ -48,29 +48,30 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
     gene1_data = cancer_data_analysis[gene1_proteomics_name]
     gene2_data = cancer_data_analysis[gene2_proteomics_name]
     # 使用DataFrame.merge()方法进行合并
-    gene1_gene2_merge = gene1_data.merge(gene2_data, on='A')
+    # gene1_gene2_merge = gene1_data.to_frame().merge(gene2_data)
     # 打印合并后的DataFrame
-    print(gene1_gene2_merge)
+    # print(gene1_gene2_merge)
 
     # 检查基因"A"和基因"B"是否有缺失值
-    if gene1_gene2_merge[gene1_proteomics_name].isnull().any() or gene1_gene2_merge[gene2_proteomics_name].isnull().any():
+    if gene1_data.isnull().any() or gene2_data.isnull().any():
         # 使用K近邻填充缺失值
         imputer = KNNImputer(n_neighbors=3)
-        df_filled = pd.DataFrame(imputer.fit_transform(gene1_gene2_merge), columns=gene1_gene2_merge.columns)
+        gene1_filled = pd.DataFrame(imputer.fit_transform(gene1_data), columns=gene1_data.columns)
+        gene2_filled= pd.DataFrame(imputer.fit_transform(gene2_data), columns=gene2_data.columns)
         # 打印填充后的DataFrame
         print("填充后的DataFrame:")
-        print(df_filled)
+        print(gene1_filled,gene2_filled)
         # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-        p_value = '{:.4e}'.format(stats.pearsonr(df_filled[gene1_proteomics_name], df_filled[gene2_proteomics_name]).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(df_filled[gene1_proteomics_name], df_filled[gene2_proteomics_name]).statistic)
+        p_value = '{:.4e}'.format(stats.pearsonr(gene1_filled,gene2_filled).pvalue)
+        R = '{:.6f}'.format(stats.pearsonr(gene1_filled,gene2_filled).statistic)
         print("GeneA和GeneB的相关性：",R)
         print("p-value：", p_value)
     else:
         # 直接进行相关性分析
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_gene2_merge[gene1_proteomics_name], gene1_gene2_merge[gene2_proteomics_name]).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(gene1_gene2_merge[gene1_proteomics_name], gene1_gene2_merge[gene2_proteomics_name]).statistic)
+        p_value = '{:.4e}'.format(stats.pearsonr(gene1_data, gene2_data))
+        R = '{:.6f}'.format(stats.pearsonr(gene1_data, gene2_data).statistic)
 
-        print("GeneA和GeneB的相关性：", R)
+        print("ProteinA和ProteinB的相关性：", R)
         print("p-value：", p_value)
 
 
