@@ -65,8 +65,8 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
         print(gene1_data_reshape,gene2_data_reshape)
         # gene1_modified= pd.DataFrame(imputer.fit_transform(gene1_data_reshape), columns=gene1_data_reshape.columns)
         # gene2_modified= pd.DataFrame(imputer.fit_transform(gene2_data_reshape), columns=gene2_data_reshape.columns)
-        # gene1_modified= imputer.fit_transform(gene1_data_reshape)
-        # gene2_modified= imputer.fit_transform(gene2_data_reshape)
+        gene1_modified= imputer.fit_transform(gene1_data_reshape)
+        gene2_modified= imputer.fit_transform(gene2_data_reshape)
         # 打印填充后的DataFrame
         print("填充后的DataFrame:")
         print(gene1_modified,gene2_modified)
