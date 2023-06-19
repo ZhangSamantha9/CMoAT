@@ -1,5 +1,7 @@
+import cptac
 import cptac.utils as ut
 import pandas as pd
+import numpy as np
 from scipy import stats
 import matplotlib
 import matplotlib.pyplot as plt
@@ -16,8 +18,9 @@ def dataset_preprocess(cancer: dataset.Dataset):
     '''
     cancer_row_data = cancer.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
                                                     metadata_cols='Sample_Tumor_Normal')
-    reduced_cancer_data = pd.DataFrame(
-        ut.reduce_multiindex(df=cancer_row_data, levels_to_drop="Database_ID", quiet=True))
+    reduced_cancer_data=pd.DataFrame(cancer_row_data)
+    # reduced_cancer_data = pd.DataFrame(
+    #     ut.reduce_multiindex(df=cancer_row_data, levels_to_drop="Database_ID", quiet=True))
     cancer_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
     return cancer_data
 
@@ -55,21 +58,30 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
     # 检查基因"A"和基因"B"是否有缺失值
     if gene1_data.isnull().any() or gene2_data.isnull().any():
         # 使用K近邻填充缺失值
+        print(gene1_data,gene2_data,gene1_data.ndim)
         imputer = KNNImputer(n_neighbors=3)
-        gene1_filled = pd.DataFrame(imputer.fit_transform(gene1_data), columns=gene1_data.columns)
-        gene2_filled= pd.DataFrame(imputer.fit_transform(gene2_data), columns=gene2_data.columns)
+        gene1_data_reshape=np.reshape(pd.DataFrame(gene1_data),(-1, 1))
+        gene2_data_reshape=np.reshape(pd.DataFrame(gene2_data),(-1, 1))
+        print(gene1_data_reshape,gene2_data_reshape)
+        # gene1_modified= pd.DataFrame(imputer.fit_transform(gene1_data_reshape), columns=gene1_data_reshape.columns)
+        # gene2_modified= pd.DataFrame(imputer.fit_transform(gene2_data_reshape), columns=gene2_data_reshape.columns)
+        # gene1_modified= imputer.fit_transform(gene1_data_reshape)
+        # gene2_modified= imputer.fit_transform(gene2_data_reshape)
         # 打印填充后的DataFrame
         print("填充后的DataFrame:")
-        print(gene1_filled,gene2_filled)
+        print(gene1_modified,gene2_modified)
         # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_filled,gene2_filled).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(gene1_filled,gene2_filled).statistic)
+        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified,gene2_modified).pvalue)
+        R = '{:.6f}'.format(stats.pearsonr(gene1_modified,gene2_modified).statistic)
         print("GeneA和GeneB的相关性：",R)
         print("p-value：", p_value)
     else:
         # 直接进行相关性分析
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_data, gene2_data))
-        R = '{:.6f}'.format(stats.pearsonr(gene1_data, gene2_data).statistic)
+        gene1_modified=gene1_data
+        gene2_modified=gene2_data
+        print(gene1_modified,gene2_modified)
+        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified,gene2_modified).pvalue)
+        R = '{:.6f}'.format(stats.pearsonr(gene1_modified,gene2_modified).statistic)
 
         print("ProteinA和ProteinB的相关性：", R)
         print("p-value：", p_value)
@@ -81,7 +93,7 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
 
     # 画图设置
     sns.set(style="darkgrid")
-    plot = sns.regplot(x=gene1_data, y=gene2_data)
+    plot = sns.regplot(x=gene1_modified, y=gene2_modified)
     plot.set(xlabel=gene1, ylabel=gene2,
              title='Gene correlation for ' + gene1 + ' and ' + gene2 + "\n" + 'R = ' + R + '  p-value = ' + p_value)
     # plt.text(1,1,pearson_correlation_array)
