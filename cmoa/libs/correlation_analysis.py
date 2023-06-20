@@ -58,22 +58,24 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
     # 检查基因"A"和基因"B"是否有缺失值
     if gene1_data.isnull().any() or gene2_data.isnull().any():
         # 使用K近邻填充缺失值
-        print(gene1_data,gene2_data,gene1_data.ndim)
+        print(gene1_data,gene2_data,gene1_data.ndim,type(gene1_data))
         imputer = KNNImputer(n_neighbors=3)
         gene1_data_reshape=np.reshape(pd.DataFrame(gene1_data),(-1, 1))
         gene2_data_reshape=np.reshape(pd.DataFrame(gene2_data),(-1, 1))
-        print(gene1_data_reshape,gene2_data_reshape)
-        # gene1_modified= pd.DataFrame(imputer.fit_transform(gene1_data_reshape), columns=gene1_data_reshape.columns)
-        # gene2_modified= pd.DataFrame(imputer.fit_transform(gene2_data_reshape), columns=gene2_data_reshape.columns)
-        gene1_modified= imputer.fit_transform(gene1_data_reshape)
-        gene2_modified= imputer.fit_transform(gene2_data_reshape)
+        print(gene1_data_reshape,gene2_data_reshape,type(gene1_data_reshape))
+        gene1_ml= imputer.fit_transform(gene1_data_reshape)
+        gene2_ml= imputer.fit_transform(gene2_data_reshape)
+        flattened_gene1_data = [item for sublist in gene1_ml for item in sublist]
+        flattened_gene2_data=[item for sublist in gene2_ml for item in sublist]
+        gene1_modified= pd.Series(flattened_gene1_data)
+        gene2_modified=pd.Series(flattened_gene2_data)
         # 打印填充后的DataFrame
         print("填充后的DataFrame:")
-        print(gene1_modified,gene2_modified)
+        print(gene1_modified,gene2_modified,type(gene1_modified))
         # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
         p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified,gene2_modified).pvalue)
         R = '{:.6f}'.format(stats.pearsonr(gene1_modified,gene2_modified).statistic)
-        print("GeneA和GeneB的相关性：",R)
+        print("GeneA和GeneB的相关性：",R,"  +KNN")
         print("p-value：", p_value)
     else:
         # 直接进行相关性分析
