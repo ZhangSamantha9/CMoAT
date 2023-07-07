@@ -59,7 +59,9 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
     if gene1_data.isnull().any() or gene2_data.isnull().any():
         # 使用K近邻填充缺失值
         print(gene1_data,gene2_data,gene1_data.ndim,type(gene1_data))
-        imputer = KNNImputer(n_neighbors=3)
+        gene1_data.to_excel('gene1_data.xlsx', index=False)
+        gene2_data.to_excel('gene2_data.xlsx', index=False)
+        imputer = KNNImputer(weights="distance")
         gene1_data_reshape=np.reshape(pd.DataFrame(gene1_data),(-1, 1))
         gene2_data_reshape=np.reshape(pd.DataFrame(gene2_data),(-1, 1))
         print(gene1_data_reshape,gene2_data_reshape,type(gene1_data_reshape))
