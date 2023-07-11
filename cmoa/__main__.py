@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description='CMOA Cli')
 parser.add_argument('-m', '--mode', type=str, default='single', choices=['single', 'batch', 'GUI'], help='single_cli, batch_cli or gui')
 exclusive_group = parser.add_mutually_exclusive_group()
 
-exclusive_group.add_argument('--cor_analy' '-ca', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='Gene corralation analysis, args: [cancer_name] [gene1] [gene2] e.g. --ca Luad EGFR MET')
+exclusive_group.add_argument('--cor_anal' '-ca', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='Gene corralation analysis, args: [cancer_name] [gene1] [gene2] e.g. --ca Luad EGFR MET')
 
 args = parser.parse_args()
 
@@ -18,5 +18,17 @@ if args.mode == 'single':
     if args.ca:
         cancer_name, gene1, gene2 = args.ca
         single_analyse.correlation_analysis(cancer_name, gene1, gene2)
+elif args.mode == 'GUI':
+    GUI.show_window()
+
+
+exclusive_group.add_argument('--boxplot',nargs=2,metavar=('cancer_name','gene'),help='')
+
+args = parser.parse_args()
+
+if args.mode == 'single':
+    if args.ca:
+        cancer_name, gene = args.boxplot
+        single_analyse.correlation_analysis(cancer_name, gene)
 elif args.mode == 'GUI':
     GUI.show_window()
