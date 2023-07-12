@@ -42,29 +42,35 @@ class ExpressionBoxplotTask(AnalysisTaskBase):
         self.normal_preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Normal']
         self.tumor_preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
 
+        print('data done')
+
 
 
     def process(self) -> None:
         tail= '_proteomics'
         gene_proteomics_name = self.gene +tail
+        print(gene_proteomics_name)
 
-        if gene_proteomics_name not in self.tumor_preprocess_data.column:
-            raise PreprocessError(f'Gene[{gene_proteomics_name}] not in f=dataframe')
+        if gene_proteomics_name not in self.preprocess_data.column:
+            raise PreprocessError(f'Gene[{gene_proteomics_name}] not in dataframe')
+        print('0')
 
         tumor_normal_label = "Sample_Tumor_Normal"
         self.preprocess_data[tumor_normal_label].unique()
+        print('1')
         # gene_normal = self.preprocess_data.Sample_Tumor_Normal =='Normal'
         # gene_tumor = self.preprocess_data.Sample_Tumor_Normal =='Tumor'
 
-
         p_value= scipy.stats.ttest_ind(self.normal_preprocess_data, self.tumor_preprocess_data).pvalue
-
+        print(p_value)
         boxplot=sns.boxplot(x=tumor_normal_label, y=self.gene, data=self.preprocess_data, showfliers=False,
                     order=["Tumor", "Normal"])
         boxplot = sns.stripplot(x=tumor_normal_label, y=self.gene, data=self.preprocess_data, color='.3',
                       order=["Tumor", "Normal"])
-        boxplot.set(title=f'{self.cancer_name} protein expression for {self.gene} \np-value = {p_value}')
+        boxplot.set(title=f'{self.cancer_name} protein expression for {self.gene} ')
+        #\np - value = {p_value}
         figPath = os.path.join(os.getcwd(),'expression_boxplot')
+        print('figure done')
         boxplot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):

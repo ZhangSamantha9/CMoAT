@@ -1,11 +1,7 @@
 import os
-
 import pandas as pd
-import cptac
 import cptac.utils as ut
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib
 from lifelines import KaplanMeierFitter
 
 from cmoa.libs import cptac_data as cd
@@ -52,7 +48,7 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         tail= '_proteomics'
         gene_proteomics_name = self.gene_name+tail
 
-        if gene_proteomics_name not in self.preprocess_data.column:
+        if gene_proteomics_name not in self.clin_prot_follow.column:
             raise ProcessError(f'Gene [{gene_proteomics_name}] not in dataframe')
 
         self.columns_to_focus_on.append(gene_proteomics_name)
