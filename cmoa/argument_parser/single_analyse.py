@@ -5,6 +5,7 @@ from typing import Optional
 from cmoa.libs.analysis_tasks.correlation_analysis_task import CorrelationAnalysisTask
 from cmoa.libs.analysis_tasks.expression_boxplot_task import ExpressionBoxplotTask
 from cmoa.libs.analysis_tasks.survival_plot import SurvivalAnalysisTask
+from cmoa.libs.analysis_tasks.dual_positive_survival import DualSurvivalAnalysisTask
 
 def correlation_analysis(cancer_name: str, gene1: str, gene2: str) -> Optional[str]:
     try:
@@ -23,6 +24,13 @@ def expression_boxplot_analysis(cancer_name: str, gene: str) -> Optional[str]:
 def survival_analysis(cancer_name: str, gene: str) -> Optional[str]:
     try:
         task = SurvivalAnalysisTask(cancer_name, gene)
+        return task.run_task()
+    except Exception:
+        return None
+
+def dual_survival_analysis(cancer_name: str, gene1: str,gene2:str) -> Optional[str]:
+    try:
+        task = DualSurvivalAnalysisTask(cancer_name, gene1,gene2)
         return task.run_task()
     except Exception:
         return None

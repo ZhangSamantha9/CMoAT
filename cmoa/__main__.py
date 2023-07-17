@@ -13,7 +13,7 @@ exclusive_group = parser.add_mutually_exclusive_group()
 exclusive_group.add_argument('-ca', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='Gene corralation analysis, args: [cancer_name] [gene1] [gene2] e.g. --ca Luad EGFR MET')
 exclusive_group.add_argument('-boxplot',nargs=2,metavar=('cancer_name','gene'),help='')
 exclusive_group.add_argument('-survival',nargs=2,metavar=('cancer_name','gene'),help='')
-
+exclusive_group.add_argument('-dualsurvival',nargs=2,metavar=('cancer_name','gene1','gene2'),help='')
 
 args= parser.parse_args()
 
@@ -27,6 +27,9 @@ if args.mode == 'single':
     if args.survival:
         cancer_name, gene = args.survival
         single_analyse.survival_analysis(cancer_name, gene)
+    if args.dual_survival:
+        cancer_name, gene = args.dualsurvival
+        single_analyse.dual_survival_analysis(cancer_name, gene1,gene2)
 
 elif args.mode == 'GUI':
     GUI.show_window()
