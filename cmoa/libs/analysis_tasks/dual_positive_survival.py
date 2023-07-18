@@ -21,9 +21,11 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
     def preprocess(self):
 
       self.cancer_dataset= cd.load_dataset(self.cancer_name)
-      if not self.cancer_dataset :
-          raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure. ')
-      self.cancer_dataset.to_excel('cancer_dataset.xlsx')
+      # if not self.cancer_dataset :
+      #      raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure. ')
+      cancer_data=self.cancer_dataset
+      # cancer_data.to_excel('cancer_dataset.xlsx')
+      print('cancer data')
 
 
 
@@ -37,6 +39,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         follow_up = self.cancer_dataset.get_followup()
         clinical.to_excel('clinical.xlsx')
         follow_up.to_excel('follow_up.xlsx')
+        print('1')
         cancer_raw_data1 = self.cancer_dataset.join_metadata_to_omics(
             metadata_df_name="clinical",
             omics_df_name="proteomics",
@@ -69,7 +72,10 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
         clin_prot_follow1 = pd.merge(reduced_cancer_data1, follow_up, on="Patient_ID")
         clin_prot_follow2 = pd.merge(reduced_cancer_data2, follow_up, on="Patient_ID")
+        clin_prot_follow1.to_excel('clin_prot_follow1.xlsx')
+        clin_prot_follow2.to_excel('clin_prot_follow2.xlsx')
         clin_prot_follow= pd.merge(clin_prot_follow1,clin_prot_follow2)
+        clin_prot_follow.to_excel('clin_prot_follow.xlsx')
         columns_to_focus_on = ['Vital Status',
                                     'Path Diag to Last Contact(Day)',
                                     'Path Diag to Death(days)']
@@ -82,10 +88,10 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         gene2_proteomics_name = self.gene2_name + tail
 
 
-        if gene1_proteomics_name not in clin_prot_follow.column:
-            raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
-        if gene2_proteomics_name not in clin_prot_follow.column:
-            raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
+        # if gene1_proteomics_name not in clin_prot_follow.column:
+        #     raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
+        # if gene2_proteomics_name not in clin_prot_follow.column:
+        #     raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
 
         columns_to_focus_on.append(gene1_proteomics_name)
         columns_to_focus_on.append(gene2_proteomics_name)
@@ -106,10 +112,11 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
         focus_group = focus_group.assign(Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(cols, 1)
         focus_group.to_excel('focus_group.xlsx')
-        lower_25_filter = [focus_group[gene1_proteomics_name] <= focus_group[gene1_proteomics_name].quantile(.25)]\
-                          &[focus_group[gene2_proteomics_name] <= focus_group[gene2_proteomics_name].quantile(.25)]
-        upper_25_filter= focus_group[gene1_proteomics_name] >= focus_group[gene1_proteomics_name].quantile(.75) \
-                         & [focus_group[gene2_proteomics_name] >= focus_group[gene2_proteomics_name].quantile(.75)]
+        print('2')
+        lower_25_filter = (focus_group[gene1_proteomics_name] <= focus_group[gene1_proteomics_name].quantile(.25))\
+                          &(focus_group[gene2_proteomics_name] <= focus_group[gene2_proteomics_name].quantile(.25))
+        upper_25_filter= (focus_group[gene1_proteomics_name] >= focus_group[gene1_proteomics_name].quantile(.75)) \
+                         & (focus_group[gene2_proteomics_name] >= focus_group[gene2_proteomics_name].quantile(.75))
 
         # focus_group2 = focus_group2.assign(Days_Until_Last_Contact_Or_Death=focus_group2[cols].sum(1)).drop(cols, 1)
         # lower_25_filter2 = focus_group2[gene2_proteomics_name] <= focus_group2[gene2_proteomics_name].quantile(.25)
@@ -118,12 +125,12 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         focus_group[gene1_proteomics_name] = np.where(lower_25_filter, "Lower_25%", focus_group[gene1_proteomics_name])
         focus_group[gene1_proteomics_name] = np.where(upper_25_filter, "Upper_75%", focus_group[gene1_proteomics_name])
         focus_group[gene1_proteomics_name] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%", focus_group[gene1_proteomics_name])
-        df_clean = focus_group.dropna(axis=0, how='any').copy()
 
-        # focus_group2[gene2_proteomics_name] = np.where(lower_25_filter2, "Lower_25%", focus_group2[gene2_proteomics_name])
-        # focus_group2[gene2_proteomics_name] = np.where(upper_25_filter2, "Upper_75%", focus_group2[gene2_proteomics_name])
-        # focus_group2[gene2_proteomics_name] = np.where(~lower_25_filter2 & ~upper_25_filter2, "Middle_50%",
-        #                                              focus_group2[gene2_proteomics_name])
+
+        focus_group[gene2_proteomics_name] = np.where(lower_25_filter, "Lower_25%", focus_group[gene2_proteomics_name])
+        focus_group[gene2_proteomics_name] = np.where(upper_25_filter, "Upper_75%", focus_group[gene2_proteomics_name])
+        focus_group[gene2_proteomics_name] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%",
+                                                      focus_group[gene2_proteomics_name])
         df_clean = focus_group.dropna(axis=0, how='any').copy()
         df_clean.to_excel('df_clean.xlsx')
         # df2_clean = focus_group2.dropna(axis=0, how='any').copy()
@@ -138,10 +145,10 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         groups = df_clean[gene1_proteomics_name]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
-        plot = kmf.plot_survival_function(loc=slice(0., 1100.))
+        plot = kmf.plot_survival_function(loc=slice(0., 1500.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
-        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1100.))
+        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1500.))
         figPath = os.path.join(os.getcwd(), f'[{gene1_proteomics_name}] and [{gene2_proteomics_name}] survival.png')
         plot.get_figure().savefig(figPath)
 
