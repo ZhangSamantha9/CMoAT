@@ -3,6 +3,7 @@ from typing import Optional
 
 from cptac import dataset
 
+
 CANCER_DATASET_DIC = {
     'Luad': cptac.Luad,
     'Endometrial': cptac.Endometrial,

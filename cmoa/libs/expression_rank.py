@@ -9,11 +9,14 @@ import math
 import cptac
 import cptac.utils as ut
 
+cptac.download(dataset="ccrcc")
+rcc= cptac.Ccrcc()
+rcc.list_data()
+proteomics = rcc.get_proteomics()
 
-lu = cptac.Luad()
 
 #Join attribute with acetylation dataframe
-clinical_and_proteomics = lu.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
+clinical_and_proteomics = rcc.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
                                                      metadata_cols='Sample_Tumor_Normal')
 
 # Use the cptac.utils.reduce_multiindex function to combine the
