@@ -1,45 +1,61 @@
-import matplotlib
 import pandas as pd
 import numpy as np
-import scipy.stats
-import statsmodels.stats.multitest
 import matplotlib.pyplot as plt
-import seaborn as sns
-import math
+from scipy import stats
 import cptac
-import cptac.utils as ut
+import csv
 
 cptac.download(dataset="ccrcc")
 rcc= cptac.Ccrcc()
-rcc.list_data()
 proteomics = rcc.get_proteomics()
+
+rcc_expression=[]
+
 
 
 #Join attribute with acetylation dataframe
-clinical_and_proteomics = rcc.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
-                                                     metadata_cols='Sample_Tumor_Normal')
+tumorProt = rcc.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
+                                      metadata_cols='Sample_Tumor_Normal')
+#Retrieve boolean array of true values
+tumor_bool = tumorProt['Sample_Tumor_Normal'] == "Tumor"
+normal_bool = tumorProt['Sample_Tumor_Normal'] != "Tumor"
+#Use boolean array to select for appropriate patients
+tumor = tumorProt[tumor_bool]
+normal = tumorProt[normal_bool]
+#Create array variables to hold the significant genes for each partition
+tumor_genes = []
+normal_genes = []
+#Grab the genes of interest, ignoring the MSI column in the dataframe
+genes = tumor.columns[1:]
+#Correct alpha level for multiple testing by dividing the standard .05 by the number of genes to be analyzed
+threshold = .05 / len(genes)
+#Perform Welch's t-test(different variances) on each gene between the two groups
+for gene in genes:
+    tumor_gene_abundance = tumor[gene]
+    normal_gene_abundance = normal[gene]
+    pvalue = stats.ttest_ind(tumor_gene_abundance, normal_gene_abundance, equal_var=False,nan_policy='omit').pvalue
 
-# Use the cptac.utils.reduce_multiindex function to combine the
-# multiple column levels, so it's easier to graph our data
-clinical_and_proteomics = pd.DataFrame(ut.reduce_multiindex(df=clinical_and_proteomics, levels_to_drop="Database_ID", quiet=True))
-clinical_attribute = "Sample_Tumor_Normal"
-#Show possible variations of Histologic_type
-clinical_and_proteomics[clinical_attribute].unique()
-#Make dataframes with only endometrioid and only serous data in order to compare
-tumor = clinical_and_proteomics.loc[clinical_and_proteomics[clinical_attribute] == "Tumor"]
-normal = clinical_and_proteomics.loc[clinical_and_proteomics[clinical_attribute] == "Normal"]
-#Here is where we set the NaN values to "Non_Tumor"
-# clinical_and_proteomics[[clinical_attribute]] = clinical_and_proteomics[[clinical_attribute]].fillna(value="Non_Tumor")
+    #If the P-value is significant, determine which partition is more highly expressed
+    if pvalue < threshold:
+         if tumor_gene_abundance.mean() > normal_gene_abundance.mean():
+             tumor_genes.append(gene[0].split("_")[0])
+             row=(gene[0].split("_")[0],pvalue)
+             rcc_expression.append(row)
+         elif normal_gene_abundance.mean() > tumor_gene_abundance.mean():
+             normal_genes.append(gene[0].split("_")[0])
+# #Optional check of number of genes in each partition
+print("Proteomics Tumor Genes:", len(tumor_genes))
+print("Proteomics Normal Genes:", len(normal_genes))
+print(rcc_expression)
+import pandas as pd
 
-# df=pd.read_excel("C:\\Users\\126614\\PycharmProjects\\GEPIA_batch_processing\\CI部提报靶点的GEPIA生信分析_单次跨膜蛋白_protein\\single_transmembrane_protein_list_protein.xlsx")
-genes='EGFR'
-plt.clf()
-for graphing_gene in genes:
-    graphing_gene += '_proteomics'
-    print(graphing_gene,'_',scipy.stats.ttest_ind(tumor[graphing_gene], normal[graphing_gene]).pvalue)
-    sns.boxplot(x=clinical_attribute, y=graphing_gene, data=clinical_and_proteomics, showfliers=False,
-                order=["Tumor", "Normal"])
-    sns.stripplot(x=clinical_attribute, y=graphing_gene, data=clinical_and_proteomics, color='.3',
-                  order=["Tumor", "Normal"])
-    matplotlib.pyplot.savefig(graphing_gene)
-    plt.clf()
+# 将 rcc_expression 转换为 DataFrame
+df = pd.DataFrame(rcc_expression, columns=["Gene", "P-value"])
+
+# 指定要保存的 Excel 文件名
+excel_filename = "rcc_expression_results.xlsx"
+
+# 将 DataFrame 写入 Excel 文件
+df.to_excel(excel_filename, index=False)
+
+print(f"数据已保存到 {excel_filename}")
