@@ -65,7 +65,7 @@ class NormalTissueTask(AnalysisTaskBase):
         # 添加标签和标题
         plt.xlabel('Organ')
         plt.ylabel('Median Value')
-        plt.title(f'Median Values of Organs. Gene: {self.genecodeIds}')
+        plt.title(f'Median Values of Organs. Gene: {self.pretty_geneids}')
 
         # 旋转横坐标标签以避免重叠
         plt.xticks(rotation=90)
