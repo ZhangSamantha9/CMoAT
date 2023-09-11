@@ -5,7 +5,7 @@ import requests
 import matplotlib
 import matplotlib.pyplot as plt
 
-from analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
+from .analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
 
 
 class NormalTissueTask(AnalysisTaskBase):
@@ -44,6 +44,9 @@ class NormalTissueTask(AnalysisTaskBase):
         self.genecodeIds: list[str] = genecodeIds
 
     def preprocess(self) -> None:
+        if len(self.genecodeIds) > 1:
+            raise PreprocessError('Gene count is more than 1, multiply gene is not supported yet.')
+
         api_rsp = requests.get(NormalTissueTask.url, params=self.params)
         self.data = json.loads(api_rsp.text)['data']
 
@@ -72,7 +75,7 @@ class NormalTissueTask(AnalysisTaskBase):
 
         # 保存图表
         plt.tight_layout()
-        self.figPath = os.path.join(os.getcwd(), 'normal_tissue.png')
+        self.figPath = os.path.join(os.getcwd(), f'normal_tissue_{self.genecodeIds[0]}.png')
         plt.savefig(self.figPath)
 
 # test
