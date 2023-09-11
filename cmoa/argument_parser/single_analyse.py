@@ -6,6 +6,7 @@ from cmoa.libs.analysis_tasks.correlation_analysis_task import CorrelationAnalys
 from cmoa.libs.analysis_tasks.expression_boxplot_task import ExpressionBoxplotTask
 from cmoa.libs.analysis_tasks.survival_plot import SurvivalAnalysisTask
 from cmoa.libs.analysis_tasks.dual_positive_survival import DualSurvivalAnalysisTask
+from cmoa.libs.analysis_tasks.normal_tissue_task import NormalTissueTask
 
 def correlation_analysis(cancer_name: str, gene1: str, gene2: str) -> Optional[str]:
     try:
@@ -17,6 +18,13 @@ def correlation_analysis(cancer_name: str, gene1: str, gene2: str) -> Optional[s
 def expression_boxplot_analysis(cancer_name: str, gene: str) -> Optional[str]:
     try:
         task = ExpressionBoxplotTask(cancer_name, gene)
+        return task.run_task()
+    except Exception:
+        return None
+    
+def normal_tissue_analysis(geneIds: list[str]) -> Optional[str]:
+    try:
+        task = NormalTissueTask(geneIds)
         return task.run_task()
     except Exception:
         return None
