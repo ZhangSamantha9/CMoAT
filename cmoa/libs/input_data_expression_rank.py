@@ -1,34 +1,28 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 from scipy import stats
-import cptac
-import csv
-
-# cptac.download(dataset="colon")
-# colon=cptac.colon
-# proteomics =colon.get_proteomics()
-cptac.download(dataset="colon")
-co = cptac.Colon()
-
-co_expression=[]
 
 
+# 从Excel文件中读取数据
+excel_file = 'C:\\Users\\126614\\Documents\\project\\TE\\progress\\meetings\\colon\\cptac_colon_normal_tumor_trans.xlsx'  # 替换为你的Excel文件路径
+tumorProt = pd.read_excel(excel_file,index_col=0)
+# 打印DataFrame
+print(tumorProt)
 
-#Join attribute with acetylation dataframe
-tumorProt = co.join_metadata_to_omics(metadata_df_name="clinical", omics_df_name="proteomics",
-                                      metadata_cols='Sample_Tumor_Normal')
+
 #Retrieve boolean array of true values
 tumor_bool = tumorProt['Sample_Tumor_Normal'] == "Tumor"
 normal_bool = tumorProt['Sample_Tumor_Normal'] != "Tumor"
+print(tumor_bool)
 #Use boolean array to select for appropriate patients
 tumor = tumorProt[tumor_bool]
 normal = tumorProt[normal_bool]
+print(tumor)
 #Create array variables to hold the significant genes for each partition
 tumor_genes = []
 normal_genes = []
 #Grab the genes of interest, ignoring the MSI column in the dataframe
 genes = tumor.columns[1:]
+print(genes)
 #Correct alpha level for multiple testing by dividing the standard .05 by the number of genes to be analyzed
 threshold = .05 / len(genes)
 #Perform Welch's t-test(different variances) on each gene between the two groups
@@ -40,19 +34,17 @@ for gene in genes:
     #If the P-value is significant, determine which partition is more highly expressed
     if pvalue < threshold:
          if tumor_gene_abundance.mean() > normal_gene_abundance.mean():
-             tumor_genes.append(gene[0].split("_")[0])
-             row=(gene[0].split("_")[0],pvalue)
-             co_expression.append(row)
+             # tumor_genes.append(gene[0].split("_")[0])
+             row=(gene,pvalue)
+             tumor_genes.append(row)
          elif normal_gene_abundance.mean() > tumor_gene_abundance.mean():
-             normal_genes.append(gene[0].split("_")[0])
+             normal_genes.append(gene)
 # #Optional check of number of genes in each partition
 print("Proteomics Tumor Genes:", len(tumor_genes))
 print("Proteomics Normal Genes:", len(normal_genes))
-print(co_expression)
-
 
 # 将 rcc_expression 转换为 DataFrame
-df = pd.DataFrame(co_expression, columns=["Gene", "P-value"])
+df = pd.DataFrame(tumor_genes, columns=["Gene", "P-value"])
 
 # 指定要保存的 Excel 文件名
 excel_filename = "colon_expression_results.xlsx"
@@ -61,3 +53,4 @@ excel_filename = "colon_expression_results.xlsx"
 df.to_excel(excel_filename, index=False)
 
 print(f"数据已保存到 {excel_filename}")
+
