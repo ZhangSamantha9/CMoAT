@@ -41,6 +41,8 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
 
         # TODO: 验证是否只需要返回Tumor类别
         self.preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
+        print(self.preprocess_data)
+
     
     def process(self) -> None:
         tail = '_proteomics'
@@ -48,7 +50,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         gene2_proteomics_name = self.gene2_name + tail
 
         if gene1_proteomics_name not in self.preprocess_data.columns:
-            raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
+             raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
         if gene2_proteomics_name not in self.preprocess_data.columns:
             raise ProcessError(f'Gene [{gene2_proteomics_name}] not in dataframe')
         
@@ -61,23 +63,15 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
             print(gene1_series, gene2_series, gene1_series.ndim, type(gene1_series))
             gene1_series.to_excel('gene1_data.xlsx', index=False)
             gene2_series.to_excel('gene2_data.xlsx', index=False)
-            imputer = KNNImputer(weights="distance")
-            gene1_data_reshape = np.reshape(pd.DataFrame(gene1_series), (-1, 1))
-            gene2_data_reshape = np.reshape(pd.DataFrame(gene2_series), (-1, 1))
-            print(gene1_data_reshape, gene2_data_reshape, type(gene1_data_reshape))
-            gene1_ml = imputer.fit_transform(gene1_data_reshape)
-            gene2_ml = imputer.fit_transform(gene2_data_reshape)
-            flattened_gene1_data = [item for sublist in gene1_ml for item in sublist]
-            flattened_gene2_data = [item for sublist in gene2_ml for item in sublist]
-            gene1_modified = pd.Series(flattened_gene1_data)
-            gene2_modified = pd.Series(flattened_gene2_data)
+            gene1_modified=gene1_series.replace('NA', float('NaN'))
+            gene2_modified=gene2_series.replace('NA', float('NaN'))
             # 打印填充后的DataFrame
             print("填充后的DataFrame:")
             print(gene1_modified, gene2_modified, type(gene1_modified))
             # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
             p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
             R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
-            print("GeneA和GeneB的相关性：", R, "  +KNN")
+            print("GeneA和GeneB的相关性：", R)
             print("p-value：", p_value)
         else:
             # 直接进行相关性分析

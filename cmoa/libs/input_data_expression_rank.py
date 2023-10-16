@@ -35,13 +35,13 @@ for gene in genes:
     normal_gene_abundance_median=np.nanmedian(normal_gene_abundance)
     print(tumor_gene_abundance_median, normal_gene_abundance_median)
     middle_dif= tumor_gene_abundance_median-normal_gene_abundance_median
-    log2_middle_dif=np.log2(middle_dif)
+    # log2_middle_dif=np.log2(middle_dif)
 
     #If the P-value is significant, determine which partition is more highly expressed
     if pvalue < threshold:
          if tumor_gene_abundance.mean() > normal_gene_abundance.mean():
              # tumor_genes.append(gene[0].split("_")[0])
-             row=(gene,pvalue,log2_middle_dif)
+             row=(gene,pvalue,middle_dif)
              tumor_genes.append(row)
          elif normal_gene_abundance.mean() > tumor_gene_abundance.mean():
              normal_genes.append(gene)
@@ -50,7 +50,7 @@ print("Proteomics Tumor Genes:", len(tumor_genes))
 print("Proteomics Normal Genes:", len(normal_genes))
 
 # 将 rcc_expression 转换为 DataFrame
-df = pd.DataFrame(tumor_genes, columns=["Gene", "P-value","Fold_change"])
+df = pd.DataFrame(tumor_genes, columns=["Gene", "P-value","Middle-difference"])
 
 # 指定要保存的 Excel 文件名
 excel_filename = "colon_expression_results.xlsx"
