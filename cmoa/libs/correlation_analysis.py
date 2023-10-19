@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from cptac import dataset
 import os
-from sklearn.impute import KNNImputer
+
 
 
 # 癌症数据处理过程：将临床数据与表达数据合成一个，再舍去多重索引，最后挑选肿瘤组织的数据
@@ -48,52 +48,29 @@ def draw_correlation_curve(gene1: str, gene2: str, cancer_data_analysis: pd.Data
         print("No data for gene 2 is found")
         return
 
-    gene1_data = cancer_data_analysis[gene1_proteomics_name]
-    gene2_data = cancer_data_analysis[gene2_proteomics_name]
+
     # 使用DataFrame.merge()方法进行合并
     # gene1_gene2_merge = gene1_data.to_frame().merge(gene2_data)
     # 打印合并后的DataFrame
     # print(gene1_gene2_merge)
 
-    # 检查基因"A"和基因"B"是否有缺失值
-    if gene1_data.isnull().any() or gene2_data.isnull().any():
-        # 使用K近邻填充缺失值
-        print(gene1_data,gene2_data,gene1_data.ndim,type(gene1_data))
-        gene1_data.to_excel('gene1_data.xlsx', index=False)
-        gene2_data.to_excel('gene2_data.xlsx', index=False)
-        imputer = KNNImputer(weights="distance")
-        gene1_data_reshape=np.reshape(pd.DataFrame(gene1_data),(-1, 1))
-        gene2_data_reshape=np.reshape(pd.DataFrame(gene2_data),(-1, 1))
-        print(gene1_data_reshape,gene2_data_reshape,type(gene1_data_reshape))
-        gene1_ml= imputer.fit_transform(gene1_data_reshape)
-        gene2_ml= imputer.fit_transform(gene2_data_reshape)
-        flattened_gene1_data = [item for sublist in gene1_ml for item in sublist]
-        flattened_gene2_data=[item for sublist in gene2_ml for item in sublist]
-        gene1_modified= pd.Series(flattened_gene1_data)
-        gene2_modified=pd.Series(flattened_gene2_data)
-        # 打印填充后的DataFrame
-        print("填充后的DataFrame:")
-        print(gene1_modified,gene2_modified,type(gene1_modified))
-        # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified,gene2_modified).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(gene1_modified,gene2_modified).statistic)
-        print("GeneA和GeneB的相关性：",R,"  +KNN")
-        print("p-value：", p_value)
-    else:
-        # 直接进行相关性分析
-        gene1_modified=gene1_data
-        gene2_modified=gene2_data
-        print(gene1_modified,gene2_modified)
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified,gene2_modified).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(gene1_modified,gene2_modified).statistic)
+    gene1_series = cancer_data_analysis[gene1_proteomics_name]
+    gene2_series = cancer_data_analysis[gene2_proteomics_name]
+    print(gene2_series, gene1_series)
+    genes_series = pd.merge(gene1_series, gene2_series, on='Patient_ID')
+    print(genes_series)
+    genes_series = genes_series.replace('NaN', float('nan')).dropna()
+    print(genes_series)
+    gene1_modified = genes_series[gene1_proteomics_name]
+    gene2_modified = genes_series[gene2_proteomics_name]
+    print("填充后的DataFrame:")
+    print(gene1_modified, gene2_modified, type(gene1_modified))
+    # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
+    p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
+    R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
+    print("GeneA和GeneB的相关性：", R)
+    print("p-value：", p_value)
 
-        print("ProteinA和ProteinB的相关性：", R)
-        print("p-value：", p_value)
-
-
-    # 计算相关性系数r和p_value，相关性系数R保留6位小数
-    # R = '{:.6f}'.format(stats.pearsonr(gene1_data, gene2_data).statistic)
-    # p_value = '{:.4e}'.format(stats.pearsonr(gene1_data, gene2_data).pvalue)
 
     # 画图设置
     sns.set(style="darkgrid")

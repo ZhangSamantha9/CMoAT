@@ -4,8 +4,7 @@ import pandas as pd
 from scipy import stats
 import cptac.utils as ut
 import seaborn as sns
-from sklearn.impute import KNNImputer
-import numpy as np
+
 
 
 from cmoa.libs import cptac_data as cd
@@ -53,47 +52,32 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
              raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
         if gene2_proteomics_name not in self.preprocess_data.columns:
             raise ProcessError(f'Gene [{gene2_proteomics_name}] not in dataframe')
-        
-        gene1_series = self.preprocess_data[gene1_proteomics_name]
-        gene2_series = self.preprocess_data[gene2_proteomics_name]
+
 
         # 检查基因"A"和基因"B"是否有缺失值
-        if gene1_series.isnull().any() or gene2_series.isnull().any():
-            # 使用K近邻填充缺失值
-            print(gene1_series, gene2_series, gene1_series.ndim, type(gene1_series))
-            gene1_series.to_excel('gene1_data.xlsx', index=False)
-            gene2_series.to_excel('gene2_data.xlsx', index=False)
-            gene1_modified=gene1_series.replace('NA', float('NaN'))
-            gene2_modified=gene2_series.replace('NA', float('NaN'))
-            # 打印填充后的DataFrame
-            print("填充后的DataFrame:")
-            print(gene1_modified, gene2_modified, type(gene1_modified))
-            # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-            p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
-            R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
-            print("GeneA和GeneB的相关性：", R)
-            print("p-value：", p_value)
-        else:
-            # 直接进行相关性分析
-            gene1_modified = gene1_series
-            gene2_modified = gene2_series
-            print(gene1_modified, gene2_modified)
-            p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
-            R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
-
-            print("ProteinA和ProteinB的相关性：", R)
-            print("p-value：", p_value)
-
-        # pearsonr_result = stats.pearsonr(gene1_series, gene2_series)
-        # r_value = '{:.6f}'.format(pearsonr_result.statistic)
-        # p_value = '{:.4e}'.format(pearsonr_result.pvalue)
+        gene1_series = self.preprocess_data[gene1_proteomics_name]
+        gene2_series = self.preprocess_data[gene2_proteomics_name]
+        print(gene2_series, gene1_series)
+        genes_series = pd.merge(gene1_series, gene2_series, on='Patient_ID')
+        print(genes_series)
+        genes_series = genes_series.replace('NaN', float('nan')).dropna()
+        print(genes_series)
+        gene1_modified = genes_series[gene1_proteomics_name]
+        gene2_modified = genes_series[gene2_proteomics_name]
+        print("填充后的DataFrame:")
+        print(gene1_modified, gene2_modified, type(gene1_modified))
+        # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
+        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
+        R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
+        print("GeneA和GeneB的相关性：", R)
+        print("p-value：", p_value)
 
         sns.set(style="darkgrid")
         plot = sns.regplot(x=gene1_series, y=gene2_series)
         plot.set(xlabel=self.gene1_name, ylabel=self.gene2_name,
                 title=f'{self.cancer_name} protein expression correlation for {self.gene1_name} and {self.gene2_name}\nR = {R} p-value = {p_value}')
 
-        figPath = os.path.join(os.getcwd(), 'correlation.png')
+        figPath = os.path.join(os.getcwd(), f'{self.gene1_name} and {self.gene2_name} correlation.png')
         plot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):

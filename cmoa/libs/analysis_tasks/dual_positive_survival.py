@@ -26,91 +26,71 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         else:
             self.cancer_dataset = cancer_dataset
 
-        print('cancer data')
 
     def process(self) -> None:
 
         clinical = self.cancer_dataset.get_clinical()
         cols = list(clinical.columns)
         tail = '_proteomics'
-        omics_gene1 = self.gene1_name+tail
-        omics_gene2 = self.gene2_name+tail
 
-        print('00')
+
+
         follow_up = self.cancer_dataset.get_followup()
-        print('000')
+
         clinical.to_excel('clinical.xlsx')
         follow_up.to_excel('follow_up.xlsx')
-        print('1')
-        cancer_raw_data1 = self.cancer_dataset.join_metadata_to_omics(
+
+        cancer_raw_data = self.cancer_dataset.join_metadata_to_omics(
             metadata_df_name="clinical",
             omics_df_name="proteomics",
-            metadata_cols=cols,
-            omics_genes=omics_gene1,
+            omics_genes=[self.gene1_name,self.gene2_name],
             quiet=True
         )
-        print('0')
-        cancer_raw_data1 = cancer_raw_data1.iloc[:, :17]
-        cancer_raw_data2 = self.cancer_dataset.join_metadata_to_omics(
-            metadata_df_name="clinical",
-            omics_df_name="proteomics",
-            metadata_cols=cols,
-            omics_genes=omics_gene2,
-            quiet=True
-        )
-        cancer_raw_data2 = cancer_raw_data2.iloc[:, :17]
-        if omics_gene1 not in cancer_raw_data1.column:
+        # 删除重复列名的列
+        # cancer_raw_data=cancer_raw_data.loc[:, ~cancer_raw_data.columns.duplicated()]
+        # print(cancer_raw_data)
+        # cancer_raw_data = cancer_raw_data.iloc[:, :17]
+        cancer_raw_data.to_excel('cancer_raw_data.xlsx')
+        omics_gene1 = self.gene1_name+tail
+        omics_gene2 = self.gene2_name+tail
+        if omics_gene1 not in cancer_raw_data.columns:
             raise ProcessError(f'Gene [{omics_gene1}] not in dataframe')
-        if omics_gene2 not in cancer_raw_data2.column:
+        if omics_gene2 not in cancer_raw_data.columns:
             raise ProcessError(f'Gene [{omics_gene2}] not in dataframe')
 
         follow_up = follow_up.rename({'PPID': 'Patient_ID'}, axis='columns')
-        cancer_raw_data1.to_excel('cancer_raw_data1.xlsx')
-        print('3')
 
-        reduced_cancer_data1 = pd.DataFrame(
+        print('1')
+
+        reduced_cancer_data= pd.DataFrame(
             ut.reduce_multiindex(
-                df=cancer_raw_data1,
+                df=cancer_raw_data,
                 levels_to_drop="Database_ID"
             ))
-        # reduced_cancer_data1 = pd.DataFrame(cancer_raw_data1)
+        
+        print('2')
 
-        reduced_cancer_data2 = pd.DataFrame(
-            ut.reduce_multiindex(
-                df=cancer_raw_data2,
-                levels_to_drop="Database_ID"
-            ))
-        # reduced_cancer_data2 = pd.DataFrame(cancer_raw_data2)
-        print('4')
-
-        reduced_cancer_data2.to_excel('reduced_cancer_data2.xlsx')
 
         clin_prot_follow1 = pd.merge(
-            reduced_cancer_data1, follow_up, on="Patient_ID")
-        clin_prot_follow2 = pd.merge(
-            reduced_cancer_data2, follow_up, on="Patient_ID")
+            reduced_cancer_data, follow_up, on="Patient_ID")
         clin_prot_follow1.to_excel('clin_prot_follow1.xlsx')
-        clin_prot_follow2.to_excel('clin_prot_follow2.xlsx')
-        clin_prot_follow = pd.merge(clin_prot_follow1, clin_prot_follow2)
-        clin_prot_follow.to_excel('clin_prot_follow.xlsx')
-        print('5')
+        
+        print('3')
         columns_to_focus_on = ['Vital Status',
                                'Path Diag to Last Contact(Day)',
                                'Path Diag to Death(days)']
 
-        tail = '_proteomics'
-        gene1_proteomics_name = self.gene1_name+tail
-        gene2_proteomics_name = self.gene2_name+tail
+        
 
-        columns_to_focus_on.append(gene1_proteomics_name)
-        print('5.1')
-        columns_to_focus_on.append(gene2_proteomics_name)
-        print('5.2')
-        focus_group = clin_prot_follow[columns_to_focus_on].copy()
-        # focus_group2 = clin_prot_follow2[columns_to_focus_on].copy()
+        columns_to_focus_on.append(omics_gene1)
+        print('4')
+        columns_to_focus_on.append(omics_gene2)
+        print('5')
+        focus_group = clin_prot_follow1[columns_to_focus_on].copy()
+        
         focus_group = focus_group.copy()
         print('6')
-        # focus_group2 = focus_group2.copy()
+    
 
         focus_group['Vital Status'] = focus_group['Vital Status'].replace(
             'Living', False)
@@ -118,39 +98,34 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
             'Deceased', True)
         focus_group['Vital Status'] = focus_group['Vital Status'].astype(
             'bool')
-        # focus_group2['Vital Status'] = focus_group2['Vital Status'].replace('Living', False)
-        # focus_group2['Vital Status'] = focus_group2['Vital Status'].replace('Deceased', True)
-        # focus_group2['Vital Status'] = focus_group2['Vital Status'].astype('bool')
+        
 
         cols = ['Path Diag to Last Contact(Day)', 'Path Diag to Death(days)']
-
+        focus_group.to_excel('focus_group.xlsx')
         focus_group = focus_group.assign(
-            Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(cols, 1)
+            Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(columns=cols)
         # focus_group = focus_group.iloc[:, 1:4]
         focus_group.to_excel('focus_group.xlsx')
-        print('2')
-        lower_25_filter = (focus_group[gene1_proteomics_name] <= focus_group[gene1_proteomics_name].quantile(.25))\
-            & (focus_group[gene2_proteomics_name] <= focus_group[gene2_proteomics_name].quantile(.25))
-        upper_25_filter = (focus_group[gene1_proteomics_name] >= focus_group[gene1_proteomics_name].quantile(.75)) \
-            & (focus_group[gene2_proteomics_name] >= focus_group[gene2_proteomics_name].quantile(.75))
+        print('7')
+        lower_25_filter = (focus_group[omics_gene1] <= focus_group[omics_gene1].quantile(.25))\
+            & (focus_group[omics_gene2] <= focus_group[omics_gene2].quantile(.25))
+        upper_25_filter = (focus_group[omics_gene1] >= focus_group[omics_gene1].quantile(.75)) \
+            & (focus_group[omics_gene2] >= focus_group[omics_gene2].quantile(.75))
 
-        # focus_group2 = focus_group2.assign(Days_Until_Last_Contact_Or_Death=focus_group2[cols].sum(1)).drop(cols, 1)
-        # lower_25_filter2 = focus_group2[gene2_proteomics_name] <= focus_group2[gene2_proteomics_name].quantile(.25)
-        # upper_25_filter2 = focus_group2[gene2_proteomics_name] >= focus_group2[gene2_proteomics_name].quantile(.75)
 
-        focus_group[gene1_proteomics_name] = np.where(
-            lower_25_filter, "Lower_25%", focus_group[gene1_proteomics_name])
-        focus_group[gene1_proteomics_name] = np.where(
-            upper_25_filter, "Upper_75%", focus_group[gene1_proteomics_name])
-        focus_group[gene1_proteomics_name] = np.where(
-            ~lower_25_filter & ~upper_25_filter, "Middle_50%", focus_group[gene1_proteomics_name])
+        focus_group[omics_gene1] = np.where(
+            lower_25_filter, "Lower_25%", focus_group[omics_gene1])
+        focus_group[omics_gene1] = np.where(
+            upper_25_filter, "Upper_75%", focus_group[omics_gene1])
+        focus_group[omics_gene1] = np.where(
+            ~lower_25_filter & ~upper_25_filter, "Middle_50%", focus_group[omics_gene1])
 
-        focus_group[gene2_proteomics_name] = np.where(
-            lower_25_filter, "Lower_25%", focus_group[gene2_proteomics_name])
-        focus_group[gene2_proteomics_name] = np.where(
-            upper_25_filter, "Upper_75%", focus_group[gene2_proteomics_name])
-        focus_group[gene2_proteomics_name] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%",
-                                                      focus_group[gene2_proteomics_name])
+        focus_group[omics_gene2] = np.where(
+            lower_25_filter, "Lower_25%", focus_group[omics_gene2])
+        focus_group[omics_gene2] = np.where(
+            upper_25_filter, "Upper_75%", focus_group[omics_gene2])
+        focus_group[omics_gene2] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%",
+                                                      focus_group[omics_gene2])
         df_clean = focus_group.dropna(axis=0, how='any').copy()
         df_clean.to_excel('df_clean.xlsx')
         # df2_clean = focus_group2.dropna(axis=0, how='any').copy()
@@ -158,7 +133,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         kmf = KaplanMeierFitter()
         T = df_clean['Days_Until_Last_Contact_Or_Death']
         E = df_clean['Vital Status']
-        groups = df_clean[gene1_proteomics_name]
+        groups = df_clean[omics_gene1]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
         plot = kmf.plot_survival_function(loc=slice(0., 1100.))
@@ -166,7 +141,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         kmf.fit(T[ix], E[ix], label='Lower_25%')
         plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1100.))
         figPath = os.path.join(os.getcwd(
-        ), f'[{gene1_proteomics_name}] and [{gene2_proteomics_name}] survival of [{self.cancer_name}].png')
+        ), f'[{omics_gene1}] and [{omics_gene2}] survival of [{self.cancer_name}].png')
         plot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):
