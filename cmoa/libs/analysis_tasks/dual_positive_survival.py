@@ -103,11 +103,12 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         cols = [
             'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_last_contact',
             'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_death']
-        focus_group.to_excel('focus_group.xlsx')
-        focus_group = focus_group.assign(
-            Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(columns=cols)
-        # focus_group = focus_group.iloc[:, 1:4]
         # focus_group.to_excel('focus_group.xlsx')
+        focus_group = ((focus_group.assign(
+            Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(columns=cols)))
+        focus_group=focus_group.loc[:, ~focus_group.columns.duplicated()]
+        # focus_group = focus_group.iloc[:, 1:4]
+        focus_group.to_excel('focus_group.xlsx')
 
         lower_25_filter = (focus_group[omics_gene1] <= focus_group[omics_gene1].quantile(.25))\
             & (focus_group[omics_gene2] <= focus_group[omics_gene2].quantile(.25))
@@ -128,6 +129,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         focus_group[omics_gene2] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%",
                                             focus_group[omics_gene2])
         df_clean = focus_group.dropna(axis=0, how='any').copy()
+        df_clean = df_clean[df_clean["Days_Until_Last_Contact_Or_Death"] >0]
         df_clean.to_excel('df_clean.xlsx')
         # df2_clean = focus_group2.dropna(axis=0, how='any').copy()
 
@@ -137,11 +139,11 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         groups = df_clean[omics_gene1]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
-        plot = kmf.plot_survival_function(loc=slice(0., 1500.))
+        plot = kmf.plot_survival_function(loc=slice(0., 1200.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
-        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1500.))
-        figPath = os.path.join(os.getcwd(), f'[{omics_gene1}] and [{omics_gene2}] survival of [{self.cancer_name}].png')
+        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1200.))
+        figPath = os.path.join(os.getcwd(), f'{self.gene1_name} and {self.gene2_name} survival of {self.cancer_name}.png')
         plot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):
