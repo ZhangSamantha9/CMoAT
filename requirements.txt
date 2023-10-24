@@ -1,4 +1,4 @@
-cptac==1.1.2
+cptac==1.5.5
 lifelines==0.27.8
 matplotlib==3.8.0
 numpy==1.24.2
