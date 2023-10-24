@@ -29,7 +29,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
     def process(self) -> None:
 
         clinical = self.cancer_dataset.get_clinical("mssm")
-        cols = list(clinical.columns)
+        # cols = list(clinical.columns)
         tail = '_proteomics'
 
         follow_up = self.cancer_dataset.get_followup("mssm")
@@ -63,7 +63,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
         follow_up = follow_up.rename({'PPID': 'Patient_ID'}, axis='columns')
 
-        print('1')
+
 
         reduced_cancer_data = pd.DataFrame(
             ut.reduce_multiindex(
@@ -71,26 +71,27 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
                 levels_to_drop="Database_ID"
             ))
 
-        print('2')
+
 
         clin_prot_follow1 = pd.merge(
             reduced_cancer_data, follow_up, on="Patient_ID")
         clin_prot_follow1.to_excel('clin_prot_follow1.xlsx')
 
-        print('3')
+
         columns_to_focus_on = [
             'vital_status_at_date_of_last_contact',
             'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_last_contact',
-            'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_death']
+            'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_death',
+            omics_gene1,omics_gene2]
 
-        columns_to_focus_on.append(omics_gene1)
-        print('4')
-        columns_to_focus_on.append(omics_gene2)
-        print('5')
+        # columns_to_focus_on.append(omics_gene1)
+        #
+        # columns_to_focus_on.append(omics_gene2)
+
         focus_group = clin_prot_follow1[columns_to_focus_on].copy()
 
         focus_group = focus_group.copy()
-        print('6')
+
 
         focus_group['vital_status_at_date_of_last_contact'] = focus_group['vital_status_at_date_of_last_contact'].replace(
             'Living', False)
@@ -106,8 +107,8 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         focus_group = focus_group.assign(
             Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(columns=cols)
         # focus_group = focus_group.iloc[:, 1:4]
-        focus_group.to_excel('focus_group.xlsx')
-        print('7')
+        # focus_group.to_excel('focus_group.xlsx')
+
         lower_25_filter = (focus_group[omics_gene1] <= focus_group[omics_gene1].quantile(.25))\
             & (focus_group[omics_gene2] <= focus_group[omics_gene2].quantile(.25))
         upper_25_filter = (focus_group[omics_gene1] >= focus_group[omics_gene1].quantile(.75)) \
@@ -136,12 +137,11 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         groups = df_clean[omics_gene1]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
-        plot = kmf.plot_survival_function(loc=slice(0., 1100.))
+        plot = kmf.plot_survival_function(loc=slice(0., 1500.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
-        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1100.))
-        figPath = os.path.join(os.getcwd(
-        ), f'[{omics_gene1}] and [{omics_gene2}] survival of [{self.cancer_name}].png')
+        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1500.))
+        figPath = os.path.join(os.getcwd(), f'[{omics_gene1}] and [{omics_gene2}] survival of [{self.cancer_name}].png')
         plot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):
