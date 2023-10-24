@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 
 from cmoa.libs import cptac_data as cd
-from cmoa.libs import correlation_analysis as ca
 
 class ProteinAnalysisGUI(tk.Tk):
     def __init__(self):
@@ -104,17 +103,18 @@ class ProteinAnalysisGUI(tk.Tk):
         gene2 = self.gene2_value.get()
 
         cancer_data = cd.load_dataset(cancer_name)
-        if cancer_data:
-            tumor_data = ca.dataset_preprocess(cancer_data)
-            path = ca.draw_correlation_curve(gene1, gene2, tumor_data)
+        # TODO: Cptac 1.5.5 No task
+        # if cancer_data:
+        #     tumor_data = ca.dataset_preprocess(cancer_data)
+        #     path = ca.draw_correlation_curve(gene1, gene2, tumor_data)
 
-            if path:
-                img = tk.PhotoImage(file=path)
-                img = img.subsample(1, 1)
-                self.render_correlation_image(img)
+        #     if path:
+        #         img = tk.PhotoImage(file=path)
+        #         img = img.subsample(1, 1)
+        #         self.render_correlation_image(img)
 
-        else:
-            print(f'Load dataset {cancer_name} failed.')
+        # else:
+        #     print(f'Load dataset {cancer_name} failed.')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 from cmoa.libs import cptac_data as cd
-from cmoa.libs import correlation_analysis as ca
 from typing import Optional
 
 from cmoa.libs.analysis_tasks.correlation_analysis_task import CorrelationAnalysisTask
