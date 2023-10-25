@@ -139,10 +139,12 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         groups = df_clean[omics_gene1]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
-        plot = kmf.plot_survival_function(loc=slice(0., 1200.))
+        plot = kmf.plot_survival_function(loc=slice(0., 500.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
-        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1200.))
+        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 500.))
+        plot.set(ylabel='percent survival',
+                 title=f'{self.gene1_name} and {self.gene2_name} survival of {self.cancer_name}')
         figPath = os.path.join(os.getcwd(), f'{self.gene1_name} and {self.gene2_name} survival of {self.cancer_name}.png')
         plot.get_figure().savefig(figPath)
 
