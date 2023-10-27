@@ -30,14 +30,16 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
             omics_df_name='proteomics',
             metadata_cols='Sample_Tumor_Normal'
         )
-
-        reduced_cancer_data = pd.DataFrame(
-            ut.reduce_multiindex(
-                df=cancer_raw_data,
-                levels_to_drop='Database_ID',
-                quiet=True
-            ))
-
+        print(cancer_raw_data)
+        if self.cancer_name!='Endometrial':
+            reduced_cancer_data = pd.DataFrame(
+                ut.reduce_multiindex(
+                    df=cancer_raw_data,
+                    levels_to_drop='Database_ID',
+                    quiet=True
+                ))
+        else:
+            reduced_cancer_data=cancer_raw_data
         # TODO: 验证是否只需要返回Tumor类别
         self.preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
         print(self.preprocess_data)
@@ -61,9 +63,11 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         genes_series = pd.merge(gene1_series, gene2_series, on='Patient_ID')
         print(genes_series)
         genes_series = genes_series.replace('NaN', float('nan')).dropna()
+        genes_series = genes_series.loc[:, ~genes_series.columns.duplicated()]
         print(genes_series)
         gene1_modified = genes_series[gene1_proteomics_name]
         gene2_modified = genes_series[gene2_proteomics_name]
+
         print("填充后的DataFrame:")
         print(gene1_modified, gene2_modified, type(gene1_modified))
         # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
@@ -73,7 +77,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         print("p-value：", p_value)
 
         sns.set(style="darkgrid")
-        plot = sns.regplot(x=gene1_series, y=gene2_series)
+        plot = sns.regplot(x=gene1_modified, y=gene2_modified)
         plot.set(xlabel=self.gene1_name, ylabel=self.gene2_name,
                 title=f'{self.cancer_name} protein expression correlation for {self.gene1_name} and {self.gene2_name}\nR = {R} p-value = {p_value}')
 
