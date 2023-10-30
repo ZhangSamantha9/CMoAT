@@ -19,6 +19,12 @@ CANCER_DATASET_DIC = {
     # 'GbmConf': cptac.GbmConf, removed at cptac 1.5.5
 }
 
+CANCER_DF_LABLES: dict[str, str] = {
+    'Vital_Status': 'vital_status_at_date_of_last_contact',
+    'Days_Until_Last_Contact': 'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_last_contact',
+    'Days_Until_Death': 'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_death',
+}
+
 def load_cancer(cancer_name) -> Optional[Cancer]:
     print(f'loading {cancer_name} data')
 
