@@ -3,8 +3,8 @@ from typing import Optional
 
 from cmoa.libs.analysis_tasks.correlation_analysis_task import CorrelationAnalysisTask
 from cmoa.libs.analysis_tasks.expression_boxplot_task import ExpressionBoxplotTask
-from cmoa.libs.analysis_tasks.survival_plot import SurvivalAnalysisTask
-from cmoa.libs.analysis_tasks.dual_positive_survival import DualSurvivalAnalysisTask
+from cmoa.libs.analysis_tasks.survival_analysis_task import SurvivalAnalysisTask
+from cmoa.libs.analysis_tasks.dual_positive_survival_task import DualSurvivalAnalysisTask
 from cmoa.libs.analysis_tasks.normal_tissue_task import NormalTissueTask
 
 
