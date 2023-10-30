@@ -19,7 +19,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
     def preprocess(self):
 
-        cancer_dataset = cd.load_dataset(self.cancer_name)
+        cancer_dataset = cd.load_cancer(self.cancer_name)
         if not cancer_dataset:
             raise PreprocessError(
                 f'cancer dataset [{self.cancer_name}] load failure.')

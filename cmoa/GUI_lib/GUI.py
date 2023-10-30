@@ -102,7 +102,7 @@ class ProteinAnalysisGUI(tk.Tk):
         gene1 = self.gene1_value.get()
         gene2 = self.gene2_value.get()
 
-        cancer_data = cd.load_dataset(cancer_name)
+        cancer_data = cd.load_cancer(cancer_name)
         # TODO: Cptac 1.5.5 No task
         # if cancer_data:
         #     tumor_data = ca.dataset_preprocess(cancer_data)
