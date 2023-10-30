@@ -163,5 +163,7 @@ cython_debug/
 .idea/
 
 # VSCode
-
 .vscode
+
+# XLSX
+*.xlsx
