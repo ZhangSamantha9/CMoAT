@@ -32,6 +32,7 @@ class AnalysisTaskBase(ABC):
     def run_task(self):
         self.preprocess()
         self.process()
+        self.plot()
         return self.result
 
 class PreprocessError(Exception):

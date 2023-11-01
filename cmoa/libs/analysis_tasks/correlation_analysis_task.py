@@ -26,12 +26,15 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
             raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure.')
 
         cancer_raw_data = cancer_dataset.join_metadata_to_omics(
-            metadata_df_name='clinical',
-            omics_df_name='proteomics',
-            metadata_cols='Sample_Tumor_Normal'
+            metadata_name='clinical',
+            metadata_source='mssm',
+            metadata_cols='type_of_analyzed_samples',
+            omics_name='proteomics',
+            omics_source='umich'
         )
-        print(cancer_raw_data)
-        if self.cancer_name!='Endometrial':
+
+        cancer_raw_data.to_excel('cancer_raw_data.xlsx')
+        if self.cancer_name!='Ucec':
             reduced_cancer_data = pd.DataFrame(
                 ut.reduce_multiindex(
                     df=cancer_raw_data,
@@ -65,19 +68,20 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         genes_series = genes_series.replace('NaN', float('nan')).dropna()
         genes_series = genes_series.loc[:, ~genes_series.columns.duplicated()]
         print(genes_series)
-        gene1_modified = genes_series[gene1_proteomics_name]
-        gene2_modified = genes_series[gene2_proteomics_name]
+        self.gene1_modified = genes_series[gene1_proteomics_name]
+        self.gene2_modified = genes_series[gene2_proteomics_name]
 
         print("填充后的DataFrame:")
-        print(gene1_modified, gene2_modified, type(gene1_modified))
+        print(self.gene1_modified, self.gene2_modified, type(self.gene1_modified))
         # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-        p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
-        R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
+    def plot(self):
+        p_value = '{:.4e}'.format(stats.pearsonr(self.gene1_modified, self.gene2_modified).pvalue)
+        R = '{:.6f}'.format(stats.pearsonr(self.gene1_modified, self.gene2_modified).statistic)
         print("GeneA和GeneB的相关性：", R)
         print("p-value：", p_value)
 
         sns.set(style="darkgrid")
-        plot = sns.regplot(x=gene1_modified, y=gene2_modified)
+        plot = sns.regplot(x=self.gene1_modified, y=self.gene2_modified)
         plot.set(xlabel=self.gene1_name, ylabel=self.gene2_name,
                 title=f'{self.cancer_name} protein expression correlation for {self.gene1_name} and {self.gene2_name}\nR = {R} p-value = {p_value}')
 
