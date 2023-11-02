@@ -4,6 +4,7 @@ import cptac.utils as ut
 import pandas as pd
 import numpy as np
 from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 
 from cmoa.libs import cptac_data as cd
 from .analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
@@ -59,6 +60,12 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
                 levels_to_drop="Database_ID"
             ))
 
+
+        reduced_cancer_data= reduced_cancer_data.loc[:, ~reduced_cancer_data.columns.duplicated()]
+        reduced_cancer_data = reduced_cancer_data.dropna(subset=['type_of_analyzed_samples_mssm_clinical'])
+
+        reduced_cancer_data = reduced_cancer_data[reduced_cancer_data['type_of_analyzed_samples_mssm_clinical'] != 'Normal']
+        reduced_cancer_data.to_excel('reduce_data.xlsx')
         clin_prot_follow= pd.merge(
             reduced_cancer_data, follow_up, on="Patient_ID")
         clin_prot_follow.to_excel('clin_prot_follow1.xlsx')
@@ -113,9 +120,23 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
         groups = self.df_clean[self.omics_gene1]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
+        median_survival_time_upper = kmf.median_survival_time_
         plot = kmf.plot_survival_function(loc=slice(0., 1200.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
+        median_survival_time_lower = kmf.median_survival_time_
+        print(f"Median Survival Time (Upper 75%): {median_survival_time_upper}")
+        print(f"Median Survival Time (Lower 25%): {median_survival_time_lower}")
+        # 执行 Log-rank 检验
+        results = logrank_test(T[~ix], T[ix], event_observed_A=E[~ix], event_observed_B=E[ix])
+
+        # 获取 Log-rank 检验的统计信息
+        test_statistic = results.test_statistic
+        p_value = results.p_value
+
+        # 打印 Log-rank 检验的结果
+        print("Log-rank test statistic:", test_statistic)
+        print("P-value:", p_value)
         plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1200.))
         plot.set(ylabel='percent survival',
                  title=f'{self.gene1_name} and {self.gene2_name} survival of {self.cancer_name}')

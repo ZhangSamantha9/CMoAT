@@ -32,24 +32,24 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
             omics_name='proteomics',
             omics_source='umich'
         )
-
+        cancer_raw_data= cancer_raw_data.loc[:,~cancer_raw_data.columns.duplicated()]
         cancer_raw_data.to_excel('cancer_raw_data.xlsx')
-        if self.cancer_name!='Ucec':
-            reduced_cancer_data = pd.DataFrame(
-                ut.reduce_multiindex(
-                    df=cancer_raw_data,
-                    levels_to_drop='Database_ID',
-                    quiet=True
-                ))
-        else:
-            reduced_cancer_data=cancer_raw_data
+        # if self.cancer_name!='Ucec':
+        #     reduced_cancer_data = pd.DataFrame(
+        #         ut.reduce_multiindex(
+        #             df=cancer_raw_data,
+        #             levels_to_drop='Database_ID',
+        #             quiet=True
+        #         ))
+        # else:
+        #     reduced_cancer_data=cancer_raw_data
         # TODO: 验证是否只需要返回Tumor类别
-        self.preprocess_data = reduced_cancer_data[reduced_cancer_data.Sample_Tumor_Normal == 'Tumor']
-        print(self.preprocess_data)
+        self.preprocess_data = cancer_raw_data[cancer_raw_data['type_of_analyzed_samples_mssm_clinical'].notna()]
+        self.preprocess_data.to_excel('self.preprocess_data.xlsx')
 
     
     def process(self) -> None:
-        tail = '_proteomics'
+        tail = '_umich_proteomics'
         gene1_proteomics_name = self.gene1_name + tail
         gene2_proteomics_name = self.gene2_name + tail
 
