@@ -45,6 +45,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         #     reduced_cancer_data=cancer_raw_data
         # TODO: 验证是否只需要返回Tumor类别
         self.preprocess_data = cancer_raw_data[cancer_raw_data['type_of_analyzed_samples_mssm_clinical'].notna()]
+        # self.preprocess_data = cancer_raw_data
         self.preprocess_data.to_excel('self.preprocess_data.xlsx')
 
     
@@ -64,6 +65,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         gene2_series = self.preprocess_data[gene2_proteomics_name]
         print(gene2_series, gene1_series)
         genes_series = pd.merge(gene1_series, gene2_series, on='Patient_ID')
+        # genes_series = self.preprocess_data[gene1_proteomics_name, gene2_proteomics_name]
         print(genes_series)
         genes_series = genes_series.replace('NaN', float('nan')).dropna()
         genes_series = genes_series.loc[:, ~genes_series.columns.duplicated()]
@@ -85,7 +87,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         plot.set(xlabel=self.gene1_name, ylabel=self.gene2_name,
                 title=f'{self.cancer_name} protein expression correlation for {self.gene1_name} and {self.gene2_name}\nR = {R} p-value = {p_value}')
 
-        figPath = os.path.join(os.getcwd(), f'{self.gene1_name} and {self.gene2_name} correlation.png')
+        figPath = os.path.join(os.getcwd(), f'{self.cancer_name}_{self.gene1_name} and {self.gene2_name} correlation.png')
         plot.get_figure().savefig(figPath)
 
         if (os.path.exists(figPath)):

@@ -63,6 +63,7 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
         reduced_cancer_data= reduced_cancer_data.loc[:, ~reduced_cancer_data.columns.duplicated()]
         reduced_cancer_data = reduced_cancer_data.dropna(subset=['type_of_analyzed_samples_mssm_clinical'])
+      
 
         reduced_cancer_data = reduced_cancer_data[reduced_cancer_data['type_of_analyzed_samples_mssm_clinical'] != 'Normal']
         reduced_cancer_data.to_excel('reduce_data.xlsx')
