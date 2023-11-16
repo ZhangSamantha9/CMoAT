@@ -63,9 +63,9 @@ class DualSurvivalAnalysisTask(AnalysisTaskBase):
 
         reduced_cancer_data= reduced_cancer_data.loc[:, ~reduced_cancer_data.columns.duplicated()]
         reduced_cancer_data = reduced_cancer_data.dropna(subset=['type_of_analyzed_samples_mssm_clinical'])
-      
+        # reduced_cancer_data = reduced_cancer_data.dropna(subset=['discovery_study'])
 
-        reduced_cancer_data = reduced_cancer_data[reduced_cancer_data['type_of_analyzed_samples_mssm_clinical'] != 'Normal']
+        # reduced_cancer_data = reduced_cancer_data[reduced_cancer_data['type_of_analyzed_samples_mssm_clinical'] != 'Normal']
         reduced_cancer_data.to_excel('reduce_data.xlsx')
         clin_prot_follow= pd.merge(
             reduced_cancer_data, follow_up, on="Patient_ID")

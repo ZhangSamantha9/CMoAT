@@ -3,6 +3,7 @@ import pandas as pd
 import cptac.utils as ut
 import numpy as np
 from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 
 from cmoa.libs import cptac_data as cd
 from .analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
@@ -20,70 +21,131 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
       cancer_dataset= cd.load_cancer(self.cancer_name)
       if not cancer_dataset :
           raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure. ')
-
-      clinical = cancer_dataset.get_clinical()
-      cols = list(clinical.columns)
-      omics_gene = self.gene_name
-      follow_up = cancer_dataset.get_followup()
-      cancer_raw_data= cancer_dataset.join_metadata_to_omics(
-          metadata_df_name="clinical",
-          omics_df_name="proteomics",
-          metadata_cols=cols,
-          omics_genes=omics_gene,
-          quiet=True
-      )
-      follow_up = follow_up.rename({'PPID': 'Patient_ID'}, axis='columns')
-      reduced_cancer_data = pd.DataFrame(
-          ut.reduce_multiindex(
-              df=cancer_raw_data,
-              levels_to_drop="Database_ID"
-          ))
-      self.clin_prot_follow = pd.merge(reduced_cancer_data, follow_up, on="Patient_ID")
-      self.columns_to_focus_on = ['Vital Status',
-                             'Path Diag to Last Contact(Day)',
-                             'Path Diag to Death(days)']
-
+      else:
+          self.cancer_dataset = cancer_dataset
 
     def process(self) -> None:
-        tail= '_proteomics'
-        gene_proteomics_name = self.gene_name+tail
 
-        if gene_proteomics_name not in self.clin_prot_follow.column:
-            raise ProcessError(f'Gene [{gene_proteomics_name}] not in dataframe')
+        clinical = self.cancer_dataset.get_clinical("mssm")
+        # cols = list(clinical.columns)
+        tail = '_proteomics'
 
-        self.columns_to_focus_on.append(gene_proteomics_name)
-        focus_group = self.clin_prot_follow[self.columns_to_focus_on].copy()
+        follow_up = self.cancer_dataset.get_followup("mssm")
+
+        clinical.to_excel('clinical.xlsx')
+        follow_up.to_excel('follow_up.xlsx')
+
+        cancer_raw_data = self.cancer_dataset.multi_join({
+            "mssm clinical": '',
+            "umich proteomics": [self.gene_name]})
+
+        cancer_raw_data.to_excel('cancer_raw_data.xlsx')
+        self.omics_gene = self.gene_name + '_umich' + tail
+
+        if self.omics_gene not in cancer_raw_data.columns:
+            raise ProcessError(f'Gene [{self.omics_gene}] not in dataframe')
+
+
+        follow_up = follow_up.rename({'PPID': 'Patient_ID'}, axis='columns')
+
+        reduced_cancer_data = pd.DataFrame(
+            ut.reduce_multiindex(
+                df=cancer_raw_data,
+                levels_to_drop="Database_ID"
+            ))
+
+        reduced_cancer_data = reduced_cancer_data.loc[:, ~reduced_cancer_data.columns.duplicated()]
+        reduced_cancer_data = reduced_cancer_data.dropna(subset=['type_of_analyzed_samples_mssm_clinical'])
+        # reduced_cancer_data = reduced_cancer_data.dropna(subset=['discovery_study'])
+
+
+        reduced_cancer_data = reduced_cancer_data[reduced_cancer_data['type_of_analyzed_samples_mssm_clinical'] != 'Normal']
+        reduced_cancer_data.to_excel('reduce_data.xlsx')
+        clin_prot_follow = pd.merge(
+            reduced_cancer_data, follow_up, on="Patient_ID")
+        clin_prot_follow.to_excel('clin_prot_follow1.xlsx')
+
+        self.vital_status = 'vital_status_at_date_of_last_contact'
+        date_of_last_contact = 'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_last_contact'
+        date_of_death = 'number_of_days_from_date_of_initial_pathologic_diagnosis_to_date_of_death'
+        columns_to_focus_on = [
+            self.vital_status,
+            date_of_last_contact,
+            date_of_death,
+            self.omics_gene]
+
+        focus_group = clin_prot_follow[columns_to_focus_on].copy()
 
         focus_group = focus_group.copy()
 
-        focus_group['Vital Status'] = focus_group['Vital Status'].replace('Living', False)
-        focus_group['Vital Status'] = focus_group['Vital Status'].replace('Deceased', True)
-        focus_group['Vital Status'] = focus_group['Vital Status'].astype('bool')
+        focus_group[self.vital_status] = focus_group[self.vital_status].replace(
+            'Living', False)
+        focus_group[self.vital_status] = focus_group[self.vital_status].replace(
+            'Deceased', True)
+        focus_group[self.vital_status] = focus_group[self.vital_status].astype(
+            'bool')
 
-        cols = ['Path Diag to Last Contact(Day)', 'Path Diag to Death(days)']
+        cols = [date_of_last_contact, date_of_death]
+        # focus_group.to_excel('focus_group.xlsx')
+        focus_group = ((focus_group.assign(
+            Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(columns=cols)))
+        focus_group = focus_group.loc[:, ~focus_group.columns.duplicated()]
+        focus_group.to_excel('focus_group.xlsx')
+
+        lower_25_filter = (focus_group[self.omics_gene] <= focus_group[self.omics_gene].quantile(.25))
+        upper_25_filter = (focus_group[self.omics_gene] >= focus_group[self.omics_gene].quantile(.75))
 
 
-        focus_group = focus_group.assign(Days_Until_Last_Contact_Or_Death=focus_group[cols].sum(1)).drop(cols, 1)
-        lower_25_filter = focus_group[gene_proteomics_name] <= focus_group[gene_proteomics_name].quantile(.25)
-        upper_25_filter = focus_group[gene_proteomics_name] >= focus_group[gene_proteomics_name].quantile(.75)
+        focus_group[self.omics_gene] = np.where(
+            lower_25_filter, "Lower_25%", focus_group[self.omics_gene])
+        focus_group[self.omics_gene] = np.where(
+            upper_25_filter, "Upper_75%", focus_group[self.omics_gene])
+        focus_group[self.omics_gene] = np.where(
+            ~lower_25_filter & ~upper_25_filter, "Middle_50%", focus_group[self.omics_gene])
 
-        focus_group[gene_proteomics_name] = np.where(lower_25_filter, "Lower_25%", focus_group[gene_proteomics_name])
-        focus_group[gene_proteomics_name] = np.where(upper_25_filter, "Upper_75%", focus_group[gene_proteomics_name])
-        focus_group[gene_proteomics_name] = np.where(~lower_25_filter & ~upper_25_filter, "Middle_50%", focus_group[gene_proteomics_name])
-        df_clean = focus_group.dropna(axis=0, how='any').copy()
+        self.df_clean = focus_group.dropna(axis=0, how='any').copy()
+        self.df_clean = self.df_clean[self.df_clean["Days_Until_Last_Contact_Or_Death"] > 0]
+        self.df_clean.to_excel('self.df_clean.xlsx')
 
+    def plot(self):
+        # return  self.df_clean
         kmf = KaplanMeierFitter()
-        T = df_clean['Days_Until_Last_Contact_Or_Death']
-        E = df_clean['Vital Status']
-        groups = df_clean[gene_proteomics_name]
+        T = self.df_clean['Days_Until_Last_Contact_Or_Death']
+        E = self.df_clean[self.vital_status]
+        groups = self.df_clean[self.omics_gene]
         ix = (groups == 'Lower_25%')
         kmf.fit(T[~ix], E[~ix], label='Upper_75%')
-        plot = kmf.plot_survival_function(loc=slice(0., 1100.))
+        median_survival_time_upper = kmf.median_survival_time_
+        plot = kmf.plot_survival_function(loc=slice(0., 1200.))
 
         kmf.fit(T[ix], E[ix], label='Lower_25%')
-        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1100.))
-        figPath = os.path.join(os.getcwd(), f'[{gene_proteomics_name}] survival.png')
+        median_survival_time_lower = kmf.median_survival_time_
+        print(f"Median Survival Time (Upper 75%): {median_survival_time_upper}")
+        print(f"Median Survival Time (Lower 25%): {median_survival_time_lower}")
+        # 执行 Log-rank 检验
+        results = logrank_test(T[~ix], T[ix], event_observed_A=E[~ix], event_observed_B=E[ix])
+
+        # 获取 Log-rank 检验的统计信息
+        test_statistic = results.test_statistic
+        p_value = results.p_value
+
+        # 打印 Log-rank 检验的结果
+        print("Log-rank test statistic:", test_statistic)
+        print("P-value:", p_value)
+        plot = kmf.plot_survival_function(ax=plot, loc=slice(0., 1200.))
+        plot.set(ylabel='percent survival',
+                 title=f'{self.gene_name} survival of {self.cancer_name}')
+        plot.legend(loc='lower left')
+        figPath = os.path.join(os.getcwd(),
+                               f'{self.gene_name} survival of {self.cancer_name}.png')
         plot.get_figure().savefig(figPath)
+
+        if (os.path.exists(figPath)):
+            self.figPath = figPath
+        else:
+            raise ProcessError(f'Could not save figure at {figPath}')
+
+
 
         if (os.path.exists(figPath)):
             self.figPath = figPath

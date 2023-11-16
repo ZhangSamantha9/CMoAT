@@ -33,6 +33,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
             omics_source='umich'
         )
         cancer_raw_data= cancer_raw_data.loc[:,~cancer_raw_data.columns.duplicated()]
+
         cancer_raw_data.to_excel('cancer_raw_data.xlsx')
         # if self.cancer_name!='Ucec':
         #     reduced_cancer_data = pd.DataFrame(
