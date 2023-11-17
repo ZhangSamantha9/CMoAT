@@ -51,6 +51,9 @@ class NormalTissueTask(AnalysisTaskBase):
         self.data = json.loads(api_rsp.text)['data']
 
     def process(self) -> None:
+        pass
+
+    def plot(self) -> None:
         matplotlib.use('Agg')
 
         # 输出转换后的 Python 对象
