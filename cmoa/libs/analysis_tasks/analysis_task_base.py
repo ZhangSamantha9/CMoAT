@@ -22,6 +22,13 @@ class AnalysisTaskBase(ABC):
         """
         pass
 
+    @abstractmethod
+    def plot(self) -> None:
+        """
+        The plot function
+        """
+        pass
+
     @property
     def result(self):
         """
