@@ -25,54 +25,37 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         if not cancer_dataset:
             raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure.')
 
-        cancer_raw_data = cancer_dataset.join_metadata_to_omics(
-            metadata_name='clinical',
-            metadata_source='mssm',
-            metadata_cols='type_of_analyzed_samples',
-            omics_name='proteomics',
-            omics_source='umich'
+        cancer_raw_data = cancer_dataset.multi_join(
+            {'umich proteomics':[self.gene1_name,self.gene2_name]}
         )
-        cancer_raw_data= cancer_raw_data.loc[:,~cancer_raw_data.columns.duplicated()]
+        cancer_raw_data = pd.DataFrame(
+            ut.reduce_multiindex(
+                df=cancer_raw_data,
+                levels_to_drop="Database_ID"
+            ))
 
-        cancer_raw_data.to_excel('cancer_raw_data.xlsx')
-        # if self.cancer_name!='Ucec':
-        #     reduced_cancer_data = pd.DataFrame(
-        #         ut.reduce_multiindex(
-        #             df=cancer_raw_data,
-        #             levels_to_drop='Database_ID',
-        #             quiet=True
-        #         ))
-        # else:
-        #     reduced_cancer_data=cancer_raw_data
-        # TODO: 验证是否只需要返回Tumor类别
-        self.preprocess_data = cancer_raw_data[cancer_raw_data['type_of_analyzed_samples_mssm_clinical'].notna()]
-        # self.preprocess_data = cancer_raw_data
-        self.preprocess_data.to_excel('self.preprocess_data.xlsx')
+        tail = '_umich_proteomics'
+        self.gene1_pro_name =self.gene1_name+tail
+        self.gene2_pro_name =self.gene2_name+tail
+        # cancer_raw_data.to_excel('cancer_raw_data.xlsx')
+        if self.gene1_pro_name not in cancer_raw_data.columns:
+             raise ProcessError(f'Gene [{self.gene1_pro_name}] not in dataframe')
+        if self.gene2_pro_name not in cancer_raw_data.columns:
+            raise ProcessError(f'Gene [{self.gene2_pro_name}] not in dataframe')
+
+        cancer_raw_data= cancer_raw_data.loc[:,~cancer_raw_data.columns.duplicated()]
+        is_tumor=[not lable.endswith('.N') for lable in cancer_raw_data.index]
+        self.preprocess_data=cancer_raw_data.loc[is_tumor,:]
+
 
     
     def process(self) -> None:
-        tail = '_umich_proteomics'
-        gene1_proteomics_name = self.gene1_name + tail
-        gene2_proteomics_name = self.gene2_name + tail
 
-        if gene1_proteomics_name not in self.preprocess_data.columns:
-             raise ProcessError(f'Gene [{gene1_proteomics_name}] not in dataframe')
-        if gene2_proteomics_name not in self.preprocess_data.columns:
-            raise ProcessError(f'Gene [{gene2_proteomics_name}] not in dataframe')
-
-
-        # 检查基因"A"和基因"B"是否有缺失值
-        gene1_series = self.preprocess_data[gene1_proteomics_name]
-        gene2_series = self.preprocess_data[gene2_proteomics_name]
-        print(gene2_series, gene1_series)
-        genes_series = pd.merge(gene1_series, gene2_series, on='Patient_ID')
-        # genes_series = self.preprocess_data[gene1_proteomics_name, gene2_proteomics_name]
-        print(genes_series)
-        genes_series = genes_series.replace('NaN', float('nan')).dropna()
+        genes_series = self.preprocess_data.replace('NaN', float('nan')).dropna()
         genes_series = genes_series.loc[:, ~genes_series.columns.duplicated()]
         print(genes_series)
-        self.gene1_modified = genes_series[gene1_proteomics_name]
-        self.gene2_modified = genes_series[gene2_proteomics_name]
+        self.gene1_modified = genes_series[self.gene1_pro_name]
+        self.gene2_modified = genes_series[self.gene2_pro_name]
 
         print("填充后的DataFrame:")
         print(self.gene1_modified, self.gene2_modified, type(self.gene1_modified))
