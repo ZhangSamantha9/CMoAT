@@ -46,6 +46,7 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
         cancer_raw_data= cancer_raw_data.loc[:,~cancer_raw_data.columns.duplicated()]
         is_tumor=[not lable.endswith('.N') for lable in cancer_raw_data.index]
         self.preprocess_data=cancer_raw_data.loc[is_tumor,:]
+        # self.preprocess_data.to_excel('preprocess_data.xlsx')
 
 
     
@@ -53,13 +54,10 @@ class CorrelationAnalysisTask(AnalysisTaskBase):
 
         genes_series = self.preprocess_data.replace('NaN', float('nan')).dropna()
         genes_series = genes_series.loc[:, ~genes_series.columns.duplicated()]
-        print(genes_series)
+        # print(genes_series)
         self.gene1_modified = genes_series[self.gene1_pro_name]
         self.gene2_modified = genes_series[self.gene2_pro_name]
 
-        print("填充后的DataFrame:")
-        print(self.gene1_modified, self.gene2_modified, type(self.gene1_modified))
-        # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
     def plot(self):
         p_value = '{:.4e}'.format(stats.pearsonr(self.gene1_modified, self.gene2_modified).pvalue)
         R = '{:.6f}'.format(stats.pearsonr(self.gene1_modified, self.gene2_modified).statistic)
