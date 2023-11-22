@@ -2,7 +2,7 @@ import argparse
 import cmoa.argument_parser.single_analyse as single_analyse
 import cmoa.argument_parser.GUI as GUI
 
-# CLI example: python -m cmoa -ca Luad EGFR MET
+# CLI example:python -m cmoa -ca Luad EGFR MET
 
 parser = argparse.ArgumentParser(description='CMOA Cli')
 parser.add_argument('-m', '--mode', type=str, default='single',
