@@ -17,7 +17,7 @@ class MutiExpressionBoxplotTask(AnalysisTaskBase):
 
     def preprocess(self) :
 
-        cancer_dataset=cd.load_cancer(self.cancer_name)
+        cancer_dataset=cd.load_cancer('Luad','Brca','Ccrcc','Coad','Gbm','Hnscc','Lscc','Ov','Pdac','Ucec')
         if not cancer_dataset:
             raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure.')
 

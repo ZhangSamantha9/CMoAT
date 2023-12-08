@@ -5,7 +5,7 @@ import seaborn as sns
 import os
 
 # 从Excel文件中读取数据
-excel_file = 'D:\\doc\\data\\Ov\\OV_tumor.xlsx'  # 替换为你的Excel文件路径
+excel_file = 'D:\\doc\\data\\colon\\cptac_colontumor.xlsx'  # 替换为你的Excel文件路径
 cancer_df = pd.read_excel(excel_file)
 # 打印DataFrame
 cancer_df.set_index("patiens", inplace=True)
@@ -15,9 +15,9 @@ print(cancer_df)
 
 # 将 'NA' 替换为 NaN
 cancer_df = cancer_df.replace('NA', float('NaN'))
-gene1_name = 'MUC1'
-gene2_name = 'EGFR'
-cancer_name='Ov'
+gene1_name = 'EGFR'
+gene2_name = 'GPA33'
+cancer_name='Coad'
 
 if gene1_name not in cancer_df.columns:
     raise (f'Gene [{gene1_name}] not in dataframe')
@@ -36,8 +36,8 @@ gene2_modified = genes_series[gene2_name]
 print("填充后的DataFrame:")
 print(gene1_modified, gene2_modified, type(gene1_modified))
  # 计算填充后的DataFrame中基因"A"和基因"B"之间的相关性
-p_value = '{:.4e}'.format(stats.pearsonr(gene1_modified, gene2_modified).pvalue)
-R = '{:.6f}'.format(stats.pearsonr(gene1_modified, gene2_modified).statistic)
+p_value = '{:.4e}'.format(stats.spearmanr(gene1_modified, gene2_modified).pvalue)
+R = '{:.6f}'.format(stats.spearmanr(gene1_modified, gene2_modified).statistic)
 print("GeneA和GeneB的相关性：", R)
 print("p-value：", p_value)
 
