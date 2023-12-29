@@ -23,6 +23,8 @@ exclusive_group.add_argument(
     '-sa', '--survival', nargs=2, metavar=('cancer_name', 'gene'), help='')
 exclusive_group.add_argument(
     '-dsa', '--dualsurvival', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='')
+exclusive_group.add_argument(
+    '-ch', '--correlationheatmap', nargs=7, metavar=('cancer_name', 'gene1', 'gene2','gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
 
 args = parser.parse_args()
 
@@ -42,6 +44,9 @@ if args.mode == 'single':
     if args.dualsurvival:
         cancer_name, gene1, gene2 = args.dualsurvival
         single_analyse.dual_survival_analysis(cancer_name, gene1, gene2)
+    if args.correlationheatmap:
+        cancer_name, gene1, gene2 ,gene3, gene4, gene5, gene6, gene7= args.correlationheatmap
+        single_analyse.correlation_heatmap(cancer_name, gene1, gene2,gene3, gene4, gene5, gene6, gene7)
 
 elif args.mode == 'GUI':
     GUI.show_window()
