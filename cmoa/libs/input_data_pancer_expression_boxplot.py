@@ -11,12 +11,12 @@ cancer_df = pd.read_csv(excel_file)
 
 cancer_df.set_index("id", inplace=True)
 gene_name='EGFR'
-cancer_name='GBM'
+cancer_name='Pancancer'
 
 genes_series = cancer_df
 genes_series['Dataset']=genes_series['Dataset'].str.replace('_.*','',regex=True)
 
-genes_series = genes_series.loc[genes_series['Dataset'] == cancer_name]
+# genes_series = genes_series.loc[genes_series['Dataset'] == cancer_name]
 tumor = genes_series.loc[genes_series['Group'] == "Tumor"]
 normal = genes_series.loc[genes_series['Group'] == "Normal"]
 
@@ -28,6 +28,9 @@ boxplot=sns.boxplot(x=tumor_normal_label, y=genes_series[gene_name], data=genes_
 boxplot = sns.stripplot(x=tumor_normal_label, y=genes_series[gene_name], data=genes_series, color='.3',
                       order=["Tumor", "Normal"])
 boxplot.set(title=f'{cancer_name} protein expression boxplot for {gene_name} \np-value = {p_value}')
+# Set the figure size with specific height
+fig = boxplot.figure
+fig.set_size_inches(8, 11)
 figPath = os.path.join(os.getcwd(),f'{cancer_name}_{gene_name}_expression_boxplot.png')
 print('figure done')
 boxplot.get_figure().savefig(figPath)
