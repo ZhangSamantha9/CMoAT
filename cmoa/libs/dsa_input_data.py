@@ -1,9 +1,5 @@
-import os
-import cptac.utils as ut
 import pandas as pd
-import numpy as np
-from lifelines import KaplanMeierFitter
-from lifelines.statistics import logrank_test
+
 
 gene1_name = 'MUC1'
 gene2_name = 'EGFR'
