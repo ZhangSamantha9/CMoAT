@@ -1,6 +1,6 @@
 import argparse
-import cmoa.argument_parser.single_analyse as single_analyse
-import cmoa.argument_parser.GUI as GUI
+import cmoat.argument_parser.single_analyse as single_analyse
+import cmoat.argument_parser.GUI as GUI
 
 # CLI example:python -m cmoa -ca Luad EGFR MET
 
@@ -24,7 +24,7 @@ exclusive_group.add_argument(
 exclusive_group.add_argument(
     '-dsa', '--dualsurvival', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='')
 exclusive_group.add_argument(
-    '-ch', '--correlationheatmap', nargs=7, metavar=('cancer_name', 'gene1', 'gene2','gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
+    '-ch', '--correlationheatmap', nargs=7, metavar=('cancer_name', 'gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
 
 args = parser.parse_args()
 
