@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cmoat"
+version = "0.1.0"
+authors = [
+    { name = "super_samantha", email = "zhangsamantha9@gmail.com" },
+    { name = "suisuishou", email = "blightue@gmail.com" },
+]
+description = "A toolkit for analysising cancer genomics & proteomics."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "cptac>=1.5.7",
+    "lifelines>=0.27.8",
+    "matplotlib>=3.8.0",
+    "numpy>=1.24.2",
+    "pandas>=2.0.0",
+    "Requests>=2.31.0",
+    "scikit_learn>=1.3.0",
+    "scipy>=1.11.2",
+    "seaborn>=0.12.2",
+    "statsmodels>=0.13.5",
+]
+
+[project.urls]
+Homepage = "https://cmoat.notion.site/CMoAT-Manual-c4ca7801421d4b06b25891988164952c?pvs=4"
+Repository = "https://github.com/ZhangSamantha9/CMOA.git"
