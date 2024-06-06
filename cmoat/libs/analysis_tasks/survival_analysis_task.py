@@ -5,8 +5,9 @@ import numpy as np
 from lifelines import KaplanMeierFitter
 from lifelines.statistics import logrank_test
 
-from cmoa.libs import cptac_data as cd
+from cmoat.libs import cptac_data as cd
 from .analysis_task_base import AnalysisTaskBase, PreprocessError, ProcessError
+
 
 class SurvivalAnalysisTask(AnalysisTaskBase):
 
@@ -15,14 +16,14 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         self.cancer_name = cancer
         self.gene_name = gene
 
-
     def preprocess(self):
 
-      cancer_dataset= cd.load_cancer(self.cancer_name)
-      if not cancer_dataset :
-          raise PreprocessError(f'cancer dataset [{self.cancer_name}] load failure. ')
-      else:
-          self.cancer_dataset = cancer_dataset
+        cancer_dataset = cd.load_cancer(self.cancer_name)
+        if not cancer_dataset:
+            raise PreprocessError(
+                f'cancer dataset [{self.cancer_name}] load failure. ')
+        else:
+            self.cancer_dataset = cancer_dataset
 
     def process(self) -> None:
         tail = '_proteomics'
@@ -42,12 +43,13 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
 
         cancer_raw_data.to_excel('cancer_raw_data.xlsx')
 
-
         if self.omics_gene not in cancer_raw_data.columns:
             raise ProcessError(f'Gene [{self.omics_gene}] not in dataframe')
 
-        reduced_cancer_data = reduced_cancer_data.loc[:, ~reduced_cancer_data.columns.duplicated()]
-        is_tumor = [not lable.endswith('.N') for lable in reduced_cancer_data.index]
+        reduced_cancer_data = reduced_cancer_data.loc[:,
+                                                      ~reduced_cancer_data.columns.duplicated()]
+        is_tumor = [not lable.endswith('.N')
+                    for lable in reduced_cancer_data.index]
         focus_group = reduced_cancer_data.loc[is_tumor, :]
 
         focus_group[self.vital_status] = focus_group[self.vital_status].replace(
@@ -64,8 +66,10 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         focus_group = focus_group.loc[:, ~focus_group.columns.duplicated()]
         focus_group.to_excel('focus_group.xlsx')
 
-        lower_25_filter = (focus_group[self.omics_gene] <= focus_group[self.omics_gene].quantile(.25))
-        upper_25_filter = (focus_group[self.omics_gene] >= focus_group[self.omics_gene].quantile(.75))
+        lower_25_filter = (
+            focus_group[self.omics_gene] <= focus_group[self.omics_gene].quantile(.25))
+        upper_25_filter = (
+            focus_group[self.omics_gene] >= focus_group[self.omics_gene].quantile(.75))
 
         focus_group[self.omics_gene] = np.where(
             lower_25_filter, "Lower_25%", focus_group[self.omics_gene])
@@ -78,7 +82,6 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         self.df_clean = self.df_clean[self.df_clean["Days_Until_Last_Contact_Or_Death"] > 0]
         self.df_clean.to_excel('self.df_clean.xlsx')
 
-
     def plot(self):
         # return  self.df_clean
         kmf = KaplanMeierFitter()
@@ -86,7 +89,7 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         E = self.df_clean[self.vital_status]
         groups = self.df_clean[self.omics_gene]
         lower_ix = (groups == 'Lower_25%')
-        upper_ix=(groups=='Upper_75%')
+        upper_ix = (groups == 'Upper_75%')
         kmf.fit(T[upper_ix], E[upper_ix], label='Upper_75%')
         median_survival_time_upper = kmf.median_survival_time_
         plot = kmf.plot_survival_function(loc=slice(0., 1200.))
@@ -96,10 +99,13 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         plot.set(ylabel='percent survival',
                  title=f'{self.gene_name} survival of {self.cancer_name}')
         plot.legend(loc='lower left')
-        print(f"Median Survival Time (Upper 75%): {median_survival_time_upper}")
-        print(f"Median Survival Time (Lower 25%): {median_survival_time_lower}")
+        print(
+            f"Median Survival Time (Upper 75%): {median_survival_time_upper}")
+        print(
+            f"Median Survival Time (Lower 25%): {median_survival_time_lower}")
         # 执行 Log-rank 检验
-        results = logrank_test(T[upper_ix], T[lower_ix], event_observed_A=E[upper_ix], event_observed_B=E[lower_ix])
+        results = logrank_test(
+            T[upper_ix], T[lower_ix], event_observed_A=E[upper_ix], event_observed_B=E[lower_ix])
 
         # 获取 Log-rank 检验的统计信息
         test_statistic = results.test_statistic
@@ -118,8 +124,6 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         else:
             raise ProcessError(f'Could not save figure at {figPath}')
 
-
-
         if (os.path.exists(figPath)):
             self.figPath = figPath
         else:
@@ -128,9 +132,3 @@ class SurvivalAnalysisTask(AnalysisTaskBase):
         @property
         def result(self):
             return self.figPath
-
-
-
-
-
-

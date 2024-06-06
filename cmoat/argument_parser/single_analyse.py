@@ -1,12 +1,11 @@
-from cmoa.libs import cptac_data as cd
+from cmoat.libs import cptac_data as cd
 from typing import Optional
 
-from cmoa.libs.analysis_tasks.correlation_curve_task import CorrelationAnalysisAllCancerTask
-from cmoa.libs.analysis_tasks.expression_boxplot_task import ExpressionBoxplotTask
-from cmoa.libs.analysis_tasks.survival_analysis_task import SurvivalAnalysisTask
-from cmoa.libs.analysis_tasks.dual_positive_survival_task import DualSurvivalAnalysisTask
-from cmoa.libs.analysis_tasks.normal_tissue_task import NormalTissueTask
-
+from cmoat.libs.analysis_tasks.correlation_curve_task import CorrelationAnalysisAllCancerTask
+from cmoat.libs.analysis_tasks.expression_boxplot_task import ExpressionBoxplotTask
+from cmoat.libs.analysis_tasks.survival_analysis_task import SurvivalAnalysisTask
+from cmoat.libs.analysis_tasks.dual_positive_survival_task import DualSurvivalAnalysisTask
+from cmoat.libs.analysis_tasks.normal_tissue_task import NormalTissueTask
 
 
 def correlation_analysis(cancer_name: str, gene1: str, gene2: str) -> Optional[str]:
@@ -32,4 +31,3 @@ def survival_analysis(cancer_name: str, gene: str) -> Optional[str]:
 def dual_survival_analysis(cancer_name: str, gene1: str, gene2: str) -> Optional[str]:
     task = DualSurvivalAnalysisTask(cancer_name, gene1, gene2)
     return task.run_task()
-

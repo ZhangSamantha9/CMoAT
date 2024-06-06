@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
-from cmoa.libs import cptac_data as cd
+from cmoat.libs import cptac_data as cd
+
 
 class ProteinAnalysisGUI(tk.Tk):
     def __init__(self):
