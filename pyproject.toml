@@ -33,3 +33,6 @@ dependencies = [
 [project.urls]
 Homepage = "https://cmoat.notion.site/CMoAT-Manual-c4ca7801421d4b06b25891988164952c?pvs=4"
 Repository = "https://github.com/ZhangSamantha9/CMOA.git"
+
+[project.scripts]
+cmoat="cmoat:__main__.main"
