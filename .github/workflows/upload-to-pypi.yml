@@ -14,27 +14,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip setuptools wheel twine
-      - name: Check for version change in pyproject.toml
-        id: check-version
+      - name: Get versions from pyproject.toml adn PyPI
+        id: get-version
         uses: maybe-hello-world/pyproject-check-version@v4
         with:
           pyproject-path: "./pyproject.toml"
-      - name: Build and Publish Package
-        if: steps.check-version.outputs.local_version_is_higher == 'true'
+      - name: Check is need update
+        id: check-version
         run: |
-            echo "Is local higher: ${{ steps.check-version.outputs.local_version_is_higher }}"
-            echo "Local version: ${{ steps.check-version.outputs.local_version }}"
-            echo "Public version: ${{ steps.check-version.outputs.public_version }}"
-            python setup.py sdist bdist_wheel
-            twine check dist/*
-            twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+          echo "Is local higher: ${{ steps.get-version.outputs.local_version_is_higher }}"
+          echo "Local version: ${{ steps.get-version.outputs.local_version }}"
+          echo "Public version: ${{ steps.get-version.outputs.public_version }}"
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        if: steps.get-version.outputs.local_version_is_higher == 'true'
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        if: steps.get-version.outputs.local_version_is_higher == 'true'
+        run: |
+          python -m pip install --upgrade pip setuptools wheel twine
+      - name: Build and Publish Package
+        if: steps.get-version.outputs.local_version_is_higher == 'true'
+        run: |
+          python setup.py sdist bdist_wheel
+          twine check dist/*
+          twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
