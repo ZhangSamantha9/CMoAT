@@ -27,8 +27,11 @@ jobs:
         with:
           pyproject-path: "./pyproject.toml"
       - name: Build and Publish Package
-        if: steps.check-version.outputs.local_version_is_higher
-        run: |
+      if: steps.check-version.outputs.local_version_is_higher
+      run: |
+          echo "Output: ${{ steps.versioncheck.outputs.local_version_is_higher }}"  # 'true' or 'false
+          echo "Local version: ${{ steps.versioncheck.outputs.local_version }}"     # e.g., 0.1.1
+          echo "Public version: ${{ steps.versioncheck.outputs.public_version }}"   # e.g., 0.1.0
           python setup.py sdist bdist_wheel
           twine check dist/*
           twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
