@@ -2,9 +2,9 @@ import argparse
 import cmoat.argument_parser.single_analyse as single_analyse
 import cmoat.argument_parser.GUI as GUI
 
-# CLI example:python -m cmoa -ca Luad EGFR MET
+
 def main(**kwargs):
-    parser = argparse.ArgumentParser(description='CMOA Cli')
+    parser = argparse.ArgumentParser(description='CMoAT Cli')
     parser.add_argument('-m', '--mode', type=str, default='single',
                         choices=['single', 'batch', 'GUI'], help='single_cli, batch_cli or gui')
     exclusive_group = parser.add_mutually_exclusive_group()
@@ -24,7 +24,7 @@ def main(**kwargs):
     exclusive_group.add_argument(
         '-dsa', '--dualsurvival', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='')
     exclusive_group.add_argument(
-        '-ch', '--correlationheatmap', nargs=7, metavar=('cancer_name', 'gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
+        '-ch', '--correlationheatmap', nargs=8, metavar=('cancer_name', 'gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
 
     args = parser.parse_args()
 
@@ -45,9 +45,9 @@ def main(**kwargs):
             cancer_name, gene1, gene2 = args.dualsurvival
             single_analyse.dual_survival_analysis(cancer_name, gene1, gene2)
 
-
     elif args.mode == 'GUI':
         GUI.show_window()
+
 
 if __name__ == "__main__":
     main()
