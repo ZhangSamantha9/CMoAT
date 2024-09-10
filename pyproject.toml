@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cmoat"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     { name = "super_samantha", email = "zhangsamantha9@gmail.com" },
     { name = "suisuishou", email = "blightue@gmail.com" },

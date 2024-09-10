@@ -16,13 +16,13 @@ def main(**kwargs):
         help='Gene corralation analysis, args: [cancer_name] [gene1] [gene2] e.g. --ca Luad EGFR MET'
     )
     exclusive_group.add_argument(
-        '-bp', '--boxplot', nargs=2, metavar=('cancer_name', 'gene'), help='')
+        '-bp', '--boxplot', nargs=2, metavar=('cancer_name', 'gene'), help='Gene expression boxplot analysis, args: [cancer_name] [gene] e.g. --bp Luad EGFR')
     exclusive_group.add_argument(
-        '-nt', '--normaltissue', nargs='+', metavar=('geneids'), help='')
+        '-nt', '--normaltissue', nargs='+', metavar=('geneids'), help='Gene expression in normal tissue analysis, args: [gene Ensembl ID] e.g. --nt ENSG00000136997')
     exclusive_group.add_argument(
-        '-sa', '--survival', nargs=2, metavar=('cancer_name', 'gene'), help='')
+        '-sa', '--survival', nargs=2, metavar=('cancer_name', 'gene'), help='Gene survival analysis, args: [cancer_name] [gene] e.g. --sa Luad EGFR')
     exclusive_group.add_argument(
-        '-dsa', '--dualsurvival', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='')
+        '-dsa', '--dualsurvival', nargs=3, metavar=('cancer_name', 'gene1', 'gene2'), help='Dual gene survival analysis, args: [cancer_name] [gene1] [gene2] e.g. --dsa Luad EGFR MET')
     exclusive_group.add_argument(
         '-ch', '--correlationheatmap', nargs=8, metavar=('cancer_name', 'gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7'), help='')
 
