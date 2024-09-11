@@ -2,7 +2,8 @@
 # CMoAT (Cancer Multi-Omics Analysis Toolkit)
 
 ![GitHub License](https://img.shields.io/github/license/ZhangSamantha9/CMoAT)
-![Pypi Version](https://img.shields.io/pypi/v/cmoat)
+[![Pypi Version](https://img.shields.io/pypi/v/cmoat)](https://pypi.org/project/cmoat/)
+[![Docs Notion](https://img.shields.io/badge/docs-blue?logo=notion)](https://cmoat.notion.site/CMoAT-Manual-c4ca7801421d4b06b25891988164952c?pvs=4)
 ![Workflow Status](https://img.shields.io/github/actions/workflow/status/ZhangSamantha9/CMoAT/upload-to-pypi.yml)
 
 CMoAT (Cancer Multi-Omics Analysis Toolkit) is a Python-based toolkit designed for analyzing cancer genomics and proteomics data. The manual provides information on how to use and install the toolkit, as well as its features and functions.
