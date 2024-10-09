@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cmoat"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
     { name = "super_samantha", email = "zhangsamantha9@gmail.com" },
     { name = "suisuishou", email = "blightue@gmail.com" },
@@ -35,4 +35,4 @@ Homepage = "https://cmoat.notion.site/CMoAT-Manual-c4ca7801421d4b06b258919881649
 Repository = "https://github.com/ZhangSamantha9/CMOA.git"
 
 [project.scripts]
-cmoat="cmoat:__main__.main"
+cmoat = "cmoat:__main__.main"

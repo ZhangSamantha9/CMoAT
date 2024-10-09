@@ -1,12 +1,24 @@
 import argparse
 import cmoat.argument_parser.single_analyse as single_analyse
 import cmoat.argument_parser.GUI as GUI
+import cmoat.__version__ as version
 
 
 def main(**kwargs):
+
+    # def version() -> str:
+    #     import importlib.resources as pkg_resources
+    #     import toml
+    #     with pkg_resources.path('cmoat', 'VERSION') as path:
+    #         with open(path) as file:
+    #             pyproject_data = toml.load(file)
+    #             return pyproject_data['project']['version']
+
     parser = argparse.ArgumentParser(description='CMoAT Cli')
     parser.add_argument('-m', '--mode', type=str, default='single',
                         choices=['single', 'batch', 'GUI'], help='single_cli, batch_cli or gui')
+    parser.add_argument('-v', '--version', action='version',
+                        version=f"%(prog)s {version.__version__}")
     exclusive_group = parser.add_mutually_exclusive_group()
 
     exclusive_group.add_argument(
