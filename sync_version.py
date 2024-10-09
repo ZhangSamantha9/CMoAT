@@ -8,7 +8,7 @@ def sync_version():
         pyproject = toml.load(f)
         version = pyproject['project']['version']
 
-    version_file_path = os.path.join('cmoat', 'version.py')
+    version_file_path = os.path.join('cmoat', '__version__.py')
     with open(version_file_path, 'w') as f:
         f.write(f'__version__ = "{version}" # Setup by CI/CD\n')
         print(
