@@ -58,8 +58,9 @@ class ExpressionBoxplotTask(AnalysisTaskBase):
     def plot(self):
         tumor_normal_label = "Sample_Type"
         self.preprocess_data[tumor_normal_label].unique()
+        palette = {"Tumor": "lightcoral", "Normal": "lightgreen"}
         boxplot = sns.boxplot(x=tumor_normal_label, y=self.preprocess_data[self.gene_pro_name], data=self.preprocess_data, showfliers=False,
-                              order=["Tumor", "Normal"])
+                              order=["Tumor", "Normal"], palette=palette)
         boxplot = sns.stripplot(x=tumor_normal_label, y=self.preprocess_data[self.gene_pro_name], data=self.preprocess_data, color='.3',
                                 order=["Tumor", "Normal"])
         boxplot.set(
